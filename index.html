@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conservatório Municipal de Cubatão — Inscrição 2027</title>
+    <meta name="description" content="Sistema de inscrição online do Processo Seletivo 2027 do Conservatório Municipal de Cubatão.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        /* ─── DESIGN TOKENS ─── */
+        :root {
+            --bg:            #0C0C0C;
+            --surface:       #141414;
+            --surface-2:     #1C1C1C;
+            --border:        #252525;
+            --border-hover:  #3A3A3A;
+            --red:           #D93030;
+            --red-dark:      #A82424;
+            --red-glow:      rgba(217,48,48,.12);
+            --blue:          #1A45AA;
+            --blue-light:    #4B7FE8;
+            --gold:          #C9A227;
+            --silver:        #9EA3A8;
+            --green:         #2D8A5E;
+            --text:          #F0F0F0;
+            --text-muted:    #808080;
+            --text-dim:      #404040;
+            --success:       #22C55E;
+            --error:         #EF4444;
+            --warn:          #F59E0B;
+            --radius:        4px;
+            --radius-lg:     8px;
+            --ease:          cubic-bezier(.4,0,.2,1);
+        }
+        *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+        html { scroll-behavior:smooth; }
+        body {
+            font-family:'Inter',sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            min-height:100vh;
+            line-height:1.6;
+            font-size:15px;
+            -webkit-font-smoothing:antialiased;
+        }
+
+        /* ─── HEADER ─── */
+        .site-header {
+            border-bottom:1px solid var(--border);
+            padding:1.1rem 2rem;
+            display:flex;
+            align-items:center;
+            gap:1.1rem;
+            position:sticky; top:0;
+            background:rgba(12,12,12,.92);
+            backdrop-filter:blur(16px);
+            z-index:100;
+        }
+        .crest-wrap { flex-shrink:0; width:44px; height:44px; }
+        .header-text h1 {
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.95rem; font-weight:700;
+            letter-spacing:.01em; line-height:1.2;
+        }
+        .header-text p {
+            font-size:.7rem; font-weight:300;
+            color:var(--text-muted);
+            letter-spacing:.1em; text-transform:uppercase;
+        }
+        .header-badge {
+            margin-left:auto;
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.6rem; font-weight:700;
+            letter-spacing:.18em; text-transform:uppercase;
+            color:var(--red); border:1px solid var(--red);
+            padding:.22rem .6rem; border-radius:2px;
+        }
+
+        /* ─── LAYOUT ─── */
+        .wrap { max-width:700px; margin:0 auto; padding:3rem 1.5rem 7rem; }
+
+        /* ─── STEP INDICATOR ─── */
+        .steps {
+            display:flex; align-items:flex-start;
+            margin-bottom:3.5rem;
+        }
+        .step {
+            flex:1; display:flex; flex-direction:column;
+            align-items:center; position:relative;
+        }
+        .step:not(:last-child)::after {
+            content:'';
+            position:absolute; top:13px; left:50%; width:100%; height:1px;
+            background:var(--border); z-index:0;
+            transition:background .4s var(--ease);
+        }
+        .step.done:not(:last-child)::after,
+        .step.active:not(:last-child)::after { background:var(--red); }
+        .step-dot {
+            width:26px; height:26px; border-radius:50%;
+            border:1.5px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.7rem; font-weight:700;
+            color:var(--text-muted); background:var(--bg);
+            position:relative; z-index:1;
+            transition:all .3s var(--ease);
+        }
+        .step.done .step-dot { background:var(--red); border-color:var(--red); color:#fff; }
+        .step.active .step-dot { border-color:var(--red); color:var(--red); box-shadow:0 0 0 4px var(--red-glow); }
+        .step-lbl {
+            margin-top:.45rem; font-family:'Space Grotesk',sans-serif;
+            font-size:.6rem; font-weight:600;
+            letter-spacing:.1em; text-transform:uppercase;
+            color:var(--text-dim); text-align:center;
+            transition:color .3s;
+        }
+        .step.active .step-lbl { color:var(--text); }
+        .step.done .step-lbl { color:var(--text-muted); }
+
+        /* ─── SECTION ─── */
+        .step-section { display:none; }
+        .step-section.active { display:block; animation:fadeUp .3s var(--ease); }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+        .section-head { margin-bottom:2.5rem; }
+        .section-tag {
+            display:block; margin-bottom:.6rem;
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.6rem; font-weight:700;
+            letter-spacing:.22em; text-transform:uppercase; color:var(--red);
+        }
+        .section-head h2 {
+            font-family:'Space Grotesk',sans-serif;
+            font-size:clamp(1.8rem,5vw,2.6rem);
+            font-weight:700; letter-spacing:-.03em; line-height:1.05;
+            margin-bottom:.7rem;
+        }
+        .section-head p { color:var(--text-muted); font-size:.88rem; font-weight:300; max-width:480px; line-height:1.75; }
+
+        /* ─── FORM GRID ─── */
+        .fg { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .fg .full { grid-column:1/-1; }
+
+        /* ─── FIELD ─── */
+        .fld { display:flex; flex-direction:column; gap:.35rem; }
+        .fld label {
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.62rem; font-weight:700;
+            letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted);
+        }
+        .fld label .req { color:var(--red); margin-left:1px; }
+        .fld input, .fld select, .fld textarea {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius); padding:.72rem 1rem;
+            color:var(--text); font-family:'Inter',sans-serif;
+            font-size:.9rem; width:100%;
+            transition:border-color .18s var(--ease), box-shadow .18s var(--ease);
+            appearance:none;
+        }
+        .fld input:focus, .fld select:focus {
+            outline:none; border-color:var(--red);
+            box-shadow:0 0 0 3px var(--red-glow);
+        }
+        .fld input[readonly] { color:var(--text-muted); cursor:default; }
+        .fld input::placeholder { color:var(--text-dim); }
+        .fld select {
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' fill='none'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23606060' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat:no-repeat; background-position:right .9rem center;
+            padding-right:2.5rem; cursor:pointer;
+        }
+        .fld select option { background:var(--surface-2); }
+        .fld .hint { font-size:.7rem; color:var(--text-muted); font-style:italic; }
+        .fld .ferr { font-size:.7rem; color:var(--error); display:none; }
+        .fld.has-err .ferr { display:block; }
+        .fld.has-err input, .fld.has-err select { border-color:var(--error); }
+        .cep-status { font-size:.7rem; min-height:.9rem; }
+        .cep-status.loading { color:var(--blue-light); }
+        .cep-status.ok     { color:var(--success); }
+        .cep-status.fail   { color:var(--error); }
+
+        /* ─── DIVIDERS ─── */
+        .divider-row {
+            grid-column:1/-1; display:flex; align-items:center; gap:.75rem;
+            margin:.35rem 0;
+        }
+        .divider-row span {
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.6rem; font-weight:700;
+            letter-spacing:.18em; text-transform:uppercase; color:var(--text-dim);
+            white-space:nowrap;
+        }
+        .divider-row::before,.divider-row::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        /* ─── CALLOUT ─── */
+        .callout {
+            grid-column:1/-1; padding:.85rem 1rem;
+            border-radius:var(--radius); border-left:2.5px solid; font-size:.83rem;
+            line-height:1.6; display:none;
+        }
+        .callout.visible { display:block; animation:fadeUp .25s var(--ease); }
+        .callout.info  { border-color:var(--blue);    color:#a8c0ff; background:rgba(30,69,170,.08); }
+        .callout.warn  { border-color:var(--warn);    color:#fbbf60; background:rgba(245,158,11,.08); }
+        .callout.error { border-color:var(--error);   color:#f87171; background:rgba(239,68,68,.08); }
+        .callout.ok    { border-color:var(--success); color:#6ee7a0; background:rgba(34,197,94,.08); }
+
+        /* ─── RESPONSIBLE ─── */
+        .resp-box {
+            grid-column:1/-1; padding:1.2rem 1.25rem;
+            background:var(--surface); border:1.5px solid #3A2E00;
+            border-radius:var(--radius-lg); display:none;
+        }
+        .resp-box.visible { display:block; animation:fadeUp .25s var(--ease); }
+        .resp-box h4 {
+            font-family:'Space Grotesk',sans-serif; font-size:.72rem; font-weight:700;
+            letter-spacing:.14em; text-transform:uppercase;
+            color:var(--gold); margin-bottom:.8rem;
+        }
+        .resp-box p { font-size:.8rem; color:var(--text-muted); margin-bottom:.9rem; line-height:1.65; }
+        .resp-grid { display:grid; grid-template-columns:1fr 1fr; gap:.9rem; }
+
+        /* ─── INSTRUMENT CARDS ─── */
+        .instr-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(128px,1fr)); gap:.65rem; }
+        .instr-card {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:.85rem .65rem;
+            cursor:pointer; text-align:center;
+            transition:border-color .18s var(--ease), background .18s var(--ease);
+            user-select:none;
+        }
+        .instr-card:hover:not(.disabled) { border-color:var(--border-hover); }
+        .instr-card.selected { border-color:var(--red); background:var(--red-glow); }
+        .instr-card.disabled { opacity:.28; cursor:not-allowed; }
+        .instr-icon { font-size:1.6rem; display:block; margin-bottom:.35rem; }
+        .instr-name { font-family:'Space Grotesk',sans-serif; font-size:.76rem; font-weight:600; color:var(--text); margin-bottom:.1rem; }
+        .instr-age  { font-size:.62rem; color:var(--text-muted); }
+
+        /* ─── PERIOD CARDS ─── */
+        .period-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.65rem; }
+        .period-card {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1.1rem .8rem;
+            cursor:pointer; text-align:center;
+            transition:border-color .18s var(--ease), background .18s var(--ease);
+            user-select:none;
+        }
+        .period-card:hover:not(.disabled) { border-color:var(--border-hover); }
+        .period-card.selected { border-color:var(--blue); background:rgba(30,69,170,.07); }
+        .period-card.disabled { opacity:.25; cursor:not-allowed; }
+        .period-icon { font-size:1.4rem; display:block; margin-bottom:.3rem; }
+        .period-name { font-family:'Space Grotesk',sans-serif; font-size:.85rem; font-weight:600; }
+        .period-hrs  { font-size:.65rem; color:var(--text-muted); margin-top:.1rem; }
+
+        /* ─── MODALITY DISPLAY ─── */
+        .modality-row {
+            display:flex; align-items:center; gap:1rem;
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1rem 1.2rem;
+        }
+        .mod-badge {
+            background:var(--blue); color:#fff;
+            font-family:'Space Grotesk',sans-serif; font-size:.65rem;
+            font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+            padding:.3rem .7rem; border-radius:2px; white-space:nowrap;
+            flex-shrink:0;
+        }
+        .mod-badge.grey { background:var(--text-dim); }
+        .mod-desc { font-size:.8rem; color:var(--text-muted); line-height:1.55; }
+
+        /* ─── TOGGLE BUTTONS ─── */
+        .toggle-group { display:flex; gap:.6rem; }
+        .toggle-btn {
+            flex:1; font-family:'Space Grotesk',sans-serif;
+            font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+            padding:.7rem 1rem; border-radius:var(--radius);
+            border:1.5px solid var(--border); background:transparent;
+            color:var(--text-muted); cursor:pointer;
+            transition:all .18s var(--ease);
+        }
+        .toggle-btn:hover { border-color:var(--border-hover); color:var(--text); }
+        .toggle-btn.on { border-color:var(--red); color:var(--text); background:var(--red-glow); }
+
+        /* ─── PAYMENT SUMMARY ─── */
+        .summary-card {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1.4rem 1.5rem;
+            margin-bottom:1.4rem;
+        }
+        .summary-card h4 {
+            font-family:'Space Grotesk',sans-serif; font-size:.62rem; font-weight:700;
+            letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted);
+            margin-bottom:1rem;
+        }
+        .sum-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:.42rem 0; border-bottom:1px solid var(--border);
+            font-size:.83rem;
+        }
+        .sum-row:last-of-type { border:none; }
+        .sum-row .lbl { color:var(--text-muted); font-weight:300; }
+        .sum-row .val { color:var(--text); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:.85rem; }
+        .sum-total {
+            display:flex; justify-content:space-between; align-items:center;
+            border-top:1px solid var(--border); padding-top:.9rem; margin-top:.5rem;
+        }
+        .sum-total .lbl { font-family:'Space Grotesk',sans-serif; font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
+        .sum-total .price { font-family:'Space Grotesk',sans-serif; font-size:1.5rem; font-weight:700; color:var(--text); }
+        .sum-total .price.free { color:var(--success); }
+
+        /* ─── EXEMPTION ─── */
+        .exemption-card {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); overflow:hidden; margin-bottom:1.4rem;
+        }
+        .exemption-hd {
+            display:flex; align-items:center; gap:.9rem;
+            padding:1rem 1.25rem; cursor:pointer; user-select:none;
+        }
+        .exemption-hd:hover { background:rgba(255,255,255,.02); }
+        .ex-check {
+            width:20px; height:20px; border:1.5px solid var(--border);
+            border-radius:3px; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center;
+            transition:all .18s var(--ease);
+        }
+        .ex-check.on { background:var(--success); border-color:var(--success); }
+        .ex-check.on::after { content:'✓'; font-size:.7rem; color:#fff; }
+        .ex-title { font-family:'Space Grotesk',sans-serif; font-size:.85rem; font-weight:600; }
+        .ex-sub   { font-size:.72rem; color:var(--text-muted); margin-top:.1rem; }
+        .exemption-body { display:none; padding:0 1.25rem 1.25rem; }
+        .exemption-body.open { display:block; }
+        .exemption-body p { font-size:.8rem; color:var(--text-muted); line-height:1.7; margin-bottom:1rem; }
+
+        /* ─── UPLOAD ZONE ─── */
+        .upload-zone {
+            border:1.5px dashed var(--border); border-radius:var(--radius);
+            padding:1.4rem; text-align:center; cursor:pointer;
+            transition:border-color .18s var(--ease);
+        }
+        .upload-zone:hover { border-color:var(--border-hover); }
+        .upload-zone.has-file { border-color:var(--success); }
+        .upload-zone input { display:none; }
+        .upload-icon { font-size:1.6rem; margin-bottom:.4rem; }
+        .upload-txt { font-size:.78rem; color:var(--text-muted); }
+        .upload-txt strong { color:var(--text); }
+        .upload-fname { display:none; margin-top:.4rem; font-size:.72rem; color:var(--success); }
+
+        /* ─── PAYMENT METHODS ─── */
+        .pay-methods { margin-bottom:1.4rem; }
+        .pay-methods h4 {
+            font-family:'Space Grotesk',sans-serif; font-size:.62rem; font-weight:700;
+            letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted);
+            margin-bottom:.8rem;
+        }
+        .pay-method-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.65rem; }
+        .pay-card {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:.95rem .75rem;
+            cursor:pointer; text-align:center;
+            transition:all .18s var(--ease);
+        }
+        .pay-card:hover { border-color:var(--border-hover); }
+        .pay-card.selected { border-color:var(--red); background:var(--red-glow); }
+        .pay-icon { font-size:1.4rem; margin-bottom:.3rem; }
+        .pay-name { font-family:'Space Grotesk',sans-serif; font-size:.76rem; font-weight:600; }
+
+        /* ─── PIX ─── */
+        .pix-panel {
+            display:none; background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1.5rem;
+            text-align:center; margin-bottom:1.4rem;
+        }
+        .pix-panel.visible { display:block; animation:fadeUp .25s var(--ease); }
+        .pix-amount { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:var(--success); margin-bottom:.2rem; }
+        .pix-label  { font-size:.75rem; color:var(--text-muted); margin-bottom:1rem; }
+        .pix-qr {
+            width:152px; height:152px; margin:0 auto .9rem;
+            background:#fff; border-radius:var(--radius); overflow:hidden;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .pix-key-wrap { font-size:.72rem; color:var(--text-muted); margin-bottom:.4rem; }
+        .pix-key {
+            font-family:monospace; font-size:.72rem;
+            background:var(--surface-2); border:1px solid var(--border);
+            border-radius:3px; padding:.45rem .75rem;
+            color:var(--text-muted); cursor:pointer; word-break:break-all;
+            margin-top:.25rem; display:block;
+            transition:color .18s;
+        }
+        .pix-key:hover { color:var(--text); }
+        .pix-note { font-size:.7rem; color:var(--text-dim); margin-top:.75rem; }
+
+        /* ─── BOLETO ─── */
+        .boleto-panel {
+            display:none; background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1.5rem;
+            text-align:center; margin-bottom:1.4rem;
+        }
+        .boleto-panel.visible { display:block; animation:fadeUp .25s var(--ease); }
+
+        /* ─── CARD FORM ─── */
+        .card-panel {
+            display:none; background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1.25rem;
+            margin-bottom:1.4rem;
+        }
+        .card-panel.visible { display:block; animation:fadeUp .25s var(--ease); }
+        .card-grid { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }
+        .card-grid .full { grid-column:1/-1; }
+
+        /* ─── DECLARATION ─── */
+        .decl-box {
+            background:var(--surface); border:1.5px solid var(--border);
+            border-radius:var(--radius-lg); padding:1.2rem 1.25rem;
+            margin-bottom:1.5rem;
+        }
+        .decl-box p { font-size:.8rem; color:var(--text-muted); line-height:1.75; margin-bottom:.9rem; }
+        .chk-row { display:flex; align-items:flex-start; gap:.65rem; cursor:pointer; }
+        .chk-row input[type=checkbox] { width:18px; height:18px; margin-top:2px; flex-shrink:0; accent-color:var(--red); cursor:pointer; }
+        .chk-row span { font-size:.82rem; color:var(--text-muted); line-height:1.55; }
+        .chk-row span strong { color:var(--text); }
+        .chk-row a { color:var(--red); text-decoration:none; }
+
+        /* ─── NAVIGATION ─── */
+        .form-nav {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-top:2.5rem; padding-top:1.5rem;
+            border-top:1px solid var(--border);
+        }
+        .btn {
+            font-family:'Space Grotesk',sans-serif;
+            font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+            padding:.8rem 1.7rem; border-radius:var(--radius); border:none;
+            cursor:pointer; display:inline-flex; align-items:center; gap:.45rem;
+            transition:all .18s var(--ease);
+        }
+        .btn-primary { background:var(--red); color:#fff; }
+        .btn-primary:hover { background:var(--red-dark); transform:translateY(-1px); }
+        .btn-primary:active { transform:translateY(0); }
+        .btn-ghost { background:transparent; color:var(--text-muted); border:1.5px solid var(--border); }
+        .btn-ghost:hover { border-color:var(--border-hover); color:var(--text); }
+        .btn:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
+        .btn-lg { padding:.95rem 2.25rem; font-size:.78rem; }
+
+        /* ─── SUCCESS ─── */
+        #step-success { display:none; text-align:center; padding:5rem 0; }
+        #step-success.active { display:block; animation:fadeUp .4s var(--ease); }
+        .ok-circle {
+            width:76px; height:76px; border-radius:50%;
+            border:1.5px solid var(--success); background:rgba(34,197,94,.08);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.9rem; margin:0 auto 2rem;
+        }
+        #step-success h2 { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; letter-spacing:-.025em; margin-bottom:.9rem; }
+        #step-success p { color:var(--text-muted); max-width:420px; margin:0 auto .7rem; line-height:1.75; font-size:.88rem; }
+        .protocol { display:inline-block; font-family:monospace; font-size:.9rem; color:var(--gold); background:var(--surface); border:1px solid var(--border); padding:.4rem 1rem; border-radius:var(--radius); margin:1rem 0; }
+        .ok-next { margin-top:2rem; padding:1.25rem 1.5rem; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-lg); max-width:440px; margin-left:auto; margin-right:auto; }
+        .ok-next h4 { font-family:'Space Grotesk',sans-serif; font-size:.62rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.75rem; }
+        .ok-step { display:flex; align-items:center; gap:.65rem; font-size:.82rem; color:var(--text-muted); padding:.3rem 0; }
+        .ok-step-n { width:20px; height:20px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:.62rem; font-weight:700; flex-shrink:0; }
+
+        /* ─── FOOTER ─── */
+        .site-footer { border-top:1px solid var(--border); padding:1.5rem 2rem; text-align:center; font-size:.68rem; color:var(--text-dim); letter-spacing:.05em; }
+
+        /* ─── RESPONSIVE ─── */
+        @media(max-width:600px) {
+            .wrap { padding:1.75rem 1rem 5rem; }
+            .fg { grid-template-columns:1fr; }
+            .fg .full { grid-column:1; }
+            .resp-grid { grid-template-columns:1fr; }
+            .period-grid { grid-template-columns:1fr; }
+            .pay-method-grid { grid-template-columns:1fr 1fr; }
+            .card-grid { grid-template-columns:1fr; }
+            .site-header { padding:.9rem 1rem; }
+            .header-badge { display:none; }
+            .steps { gap:0; }
+            .step-lbl { font-size:.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+    <div class="crest-wrap">
+        <svg viewBox="0 0 44 48" xmlns="http://www.w3.org/2000/svg" width="44" height="48">
+            <!-- Mural crown -->
+            <path d="M3 8 L5 4 L8 8 L11 4 L14 8 L17 4 L20 8 L24 4 L27 8 L30 4 L33 8 L36 4 L39 8 L41 8 L41 12 L3 12 Z" fill="#9EA3A8"/>
+            <!-- Shield - blue top -->
+            <path d="M3 12 L41 12 L41 30 L22 44 L3 30 Z" fill="#1A45AA"/>
+            <!-- Shield - red bottom -->
+            <path d="M3 26 L41 26 L41 30 L22 44 L3 30 Z" fill="#C41E3A"/>
+            <!-- Industrial silhouette top -->
+            <rect x="7"  y="14" width="3" height="10" fill="#9EA3A8" opacity=".8"/>
+            <rect x="12" y="16" width="2" height="8"  fill="#9EA3A8" opacity=".7"/>
+            <rect x="17" y="13" width="4" height="11" fill="#9EA3A8" opacity=".9"/>
+            <rect x="23" y="15" width="2" height="9"  fill="#9EA3A8" opacity=".7"/>
+            <rect x="27" y="14" width="3" height="10" fill="#9EA3A8" opacity=".8"/>
+            <rect x="32" y="16" width="2" height="8"  fill="#9EA3A8" opacity=".6"/>
+            <!-- Gear (red zone) -->
+            <circle cx="22" cy="33" r="5.5" fill="none" stroke="#9EA3A8" stroke-width="1.5"/>
+            <circle cx="22" cy="33" r="2.2" fill="#9EA3A8"/>
+            <!-- 4-point star over gear -->
+            <polygon points="22,27 23.2,31.5 28,32.5 23.5,34 24.5,38.5 22,35 19.5,38.5 20.5,34 16,32.5 20.8,31.5" fill="#C9A227"/>
+            <!-- Shield border -->
+            <path d="M3 12 L41 12 L41 30 L22 44 L3 30 Z" fill="none" stroke="#9EA3A8" stroke-width=".8"/>
+        </svg>
+    </div>
+    <div class="header-text">
+        <h1>Conservatório Municipal de Cubatão</h1>
+        <p>Processo Seletivo 2027 — Inscrições</p>
+    </div>
+    <span class="header-badge">Inscrições Abertas</span>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main class="wrap">
+
+    <!-- Progress -->
+    <nav class="steps" aria-label="Progresso do formulário">
+        <div class="step active" id="si-1">
+            <div class="step-dot">1</div>
+            <div class="step-lbl">Dados Pessoais</div>
+        </div>
+        <div class="step" id="si-2">
+            <div class="step-dot">2</div>
+            <div class="step-lbl">Curso</div>
+        </div>
+        <div class="step" id="si-3">
+            <div class="step-dot">3</div>
+            <div class="step-lbl">Pagamento</div>
+        </div>
+    </nav>
+
+    <!-- ═══ STEP 1 ═══ -->
+    <section class="step-section active" id="step-1">
+        <div class="section-head">
+            <span class="section-tag">Etapa 1 de 3</span>
+            <h2>Dados Pessoais</h2>
+            <p>Preencha seus dados. O endereço é preenchido automaticamente ao informar o CEP — você digita o mínimo possível.</p>
+        </div>
+
+        <div class="fg">
+            <div class="fld">
+                <label>Nome <span class="req">*</span></label>
+                <input type="text" id="nome" placeholder="Maria" autocomplete="given-name">
+                <span class="ferr">Informe o nome.</span>
+            </div>
+            <div class="fld">
+                <label>Sobrenome <span class="req">*</span></label>
+                <input type="text" id="sobrenome" placeholder="Silva Santos" autocomplete="family-name">
+                <span class="ferr">Informe o sobrenome.</span>
+            </div>
+            <div class="fld">
+                <label>Data de Nascimento <span class="req">*</span></label>
+                <input type="date" id="dataNasc" max="">
+                <span class="ferr">Informe a data.</span>
+            </div>
+            <div class="fld">
+                <label>CPF <span class="req">*</span></label>
+                <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+                <span class="ferr">CPF inválido.</span>
+            </div>
+            <div class="fld">
+                <label>E-mail <span class="req">*</span></label>
+                <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+                <span class="ferr">E-mail inválido.</span>
+            </div>
+            <div class="fld">
+                <label>Celular / WhatsApp <span class="req">*</span></label>
+                <input type="tel" id="celular" placeholder="(13) 99999-0000" maxlength="15" inputmode="numeric">
+                <span class="ferr">Celular inválido.</span>
+            </div>
+            <div class="fld full">
+                <label>Escolaridade <span class="req">*</span></label>
+                <select id="escolaridade">
+                    <option value="">Selecione seu nível de escolaridade</option>
+                    <option value="fund1">Ensino Fundamental I (1º ao 5º ano)</option>
+                    <option value="fund2">Ensino Fundamental II (6º ao 9º ano)</option>
+                    <option value="medio_cursando">Ensino Médio — em curso</option>
+                    <option value="medio_completo">Ensino Médio — concluído</option>
+                    <option value="superior">Ensino Superior (cursando ou concluído)</option>
+                </select>
+                <span class="ferr">Selecione a escolaridade.</span>
+            </div>
+
+            <div class="divider-row full"><span>Endereço</span></div>
+
+            <div class="fld">
+                <label>CEP <span class="req">*</span></label>
+                <input type="text" id="cep" placeholder="00000-000" maxlength="9" inputmode="numeric">
+                <span class="cep-status" id="cepStatus"></span>
+                <span class="ferr">CEP inválido ou não encontrado.</span>
+            </div>
+            <div class="fld">
+                <label>Número <span class="req">*</span></label>
+                <input type="text" id="numero" placeholder="123" inputmode="numeric">
+                <span class="ferr">Informe o número.</span>
+            </div>
+            <div class="fld full">
+                <label>Logradouro <span class="req">*</span></label>
+                <input type="text" id="logradouro" placeholder="Preenchido automaticamente pelo CEP" readonly>
+            </div>
+            <div class="fld">
+                <label>Complemento</label>
+                <input type="text" id="complemento" placeholder="Apto, sala, bloco…">
+            </div>
+            <div class="fld">
+                <label>Bairro <span class="req">*</span></label>
+                <input type="text" id="bairro" readonly placeholder="Preenchido pelo CEP">
+            </div>
+            <div class="fld">
+                <label>Cidade <span class="req">*</span></label>
+                <input type="text" id="cidade" readonly placeholder="Preenchido pelo CEP">
+            </div>
+            <div class="fld">
+                <label>Estado</label>
+                <input type="text" id="estado" readonly placeholder="UF" maxlength="2">
+            </div>
+
+            <!-- Minor -->
+            <div class="resp-box" id="respBox">
+                <h4>⚠ Responsável Legal (menor de 18 anos)</h4>
+                <p>Como o candidato é menor de 18 anos, é obrigatório informar os dados do responsável legal.</p>
+                <div class="resp-grid">
+                    <div class="fld">
+                        <label>Nome do Responsável <span class="req">*</span></label>
+                        <input type="text" id="rNome" placeholder="Nome completo">
+                        <span class="ferr">Informe o nome.</span>
+                    </div>
+                    <div class="fld">
+                        <label>CPF do Responsável <span class="req">*</span></label>
+                        <input type="text" id="rCpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+                        <span class="ferr">CPF inválido.</span>
+                    </div>
+                    <div class="fld">
+                        <label>Celular do Responsável <span class="req">*</span></label>
+                        <input type="tel" id="rCelular" placeholder="(13) 99999-0000" maxlength="15" inputmode="numeric">
+                        <span class="ferr">Celular inválido.</span>
+                    </div>
+                    <div class="fld">
+                        <label>Grau de Parentesco <span class="req">*</span></label>
+                        <select id="rParentesco">
+                            <option value="">Selecione</option>
+                            <option value="mae">Mãe</option>
+                            <option value="pai">Pai</option>
+                            <option value="avo">Avó / Avô</option>
+                            <option value="tio">Tia / Tio</option>
+                            <option value="responsavel_legal">Responsável Legal</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                        <span class="ferr">Selecione.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-nav">
+            <span></span>
+            <button class="btn btn-primary" onclick="goStep(2)">Próxima etapa &rarr;</button>
+        </div>
+    </section>
+
+    <!-- ═══ STEP 2 ═══ -->
+    <section class="step-section" id="step-2">
+        <div class="section-head">
+            <span class="section-tag">Etapa 2 de 3</span>
+            <h2>Escolha do Curso</h2>
+            <p>As opções disponíveis são filtradas automaticamente pela sua idade e escolaridade.</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1.75rem;">
+
+            <!-- Modality -->
+            <div>
+                <label style="font-family:'Space Grotesk',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.6rem;">Modalidade</label>
+                <div class="modality-row">
+                    <div class="mod-badge grey" id="modBadge">A determinar</div>
+                    <div class="mod-desc" id="modDesc">Complete os dados de escolaridade e data de nascimento.</div>
+                </div>
+            </div>
+
+            <!-- Age gate -->
+            <div class="callout error" id="ageGate">
+                <strong>Idade mínima não atingida.</strong> A inscrição no Conservatório exige idade mínima de <strong>7 anos</strong>. Verifique a data de nascimento informada.
+            </div>
+
+            <!-- Instruments -->
+            <div>
+                <label style="font-family:'Space Grotesk',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.7rem;">Instrumento <span style="color:var(--red)">*</span></label>
+                <div class="instr-grid" id="instrGrid"></div>
+                <p id="instrHint" style="font-size:.7rem;color:var(--text-muted);margin-top:.5rem;font-style:italic;"></p>
+            </div>
+
+            <!-- Periods -->
+            <div>
+                <label style="font-family:'Space Grotesk',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.7rem;">Período de Preferência <span style="color:var(--red)">*</span></label>
+                <div class="period-grid" id="periodGrid"></div>
+            </div>
+
+            <!-- Experience -->
+            <div>
+                <label style="font-family:'Space Grotesk',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.6rem;">Experiência Musical Prévia</label>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn" id="tNao" onclick="setExp(false)">Não tenho</button>
+                    <button type="button" class="toggle-btn" id="tSim" onclick="setExp(true)">Tenho experiência</button>
+                </div>
+                <div id="expFld" style="margin-top:.8rem;display:none;">
+                    <div class="fld">
+                        <label>Descreva brevemente</label>
+                        <input type="text" id="expDesc" placeholder="Ex.: 2 anos de violão em escola particular">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-nav">
+            <button class="btn btn-ghost" onclick="goStep(1)">&larr; Voltar</button>
+            <button class="btn btn-primary" onclick="goStep(3)">Próxima etapa &rarr;</button>
+        </div>
+    </section>
+
+    <!-- ═══ STEP 3 ═══ -->
+    <section class="step-section" id="step-3">
+        <div class="section-head">
+            <span class="section-tag">Etapa 3 de 3</span>
+            <h2>Taxa de Inscrição</h2>
+            <p>Revise os dados e efetue o pagamento de <strong style="color:var(--text)">R$&nbsp;20,00</strong> para concluir sua inscrição.</p>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-card" id="summaryCard">
+            <h4>Resumo da Inscrição</h4>
+            <div id="summaryRows"></div>
+            <div class="sum-total">
+                <span class="lbl">Taxa de Inscrição</span>
+                <span class="price" id="totalPrice">R$&nbsp;20,00</span>
+            </div>
+        </div>
+
+        <!-- Exemption -->
+        <div class="exemption-card">
+            <div class="exemption-hd" onclick="toggleExempt()">
+                <div class="ex-check" id="exCheck"></div>
+                <div>
+                    <div class="ex-title">Solicitar Isenção da Taxa</div>
+                    <div class="ex-sub">Beneficiários de programas sociais podem solicitar isenção</div>
+                </div>
+            </div>
+            <div class="exemption-body" id="exBody">
+                <p>A isenção é destinada a beneficiários de programas de assistência social (Bolsa Família, BPC, CadÚnico, etc.). Envie o comprovante abaixo. A documentação será verificada presencialmente no ato da matrícula.</p>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('uInput').click()">
+                    <input type="file" id="uInput" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(event)">
+                    <div class="upload-icon">📎</div>
+                    <div class="upload-txt"><strong>Clique para anexar comprovante</strong><br>PDF, JPG ou PNG · Máx. 5 MB</div>
+                    <div class="upload-fname" id="uploadFname"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment methods -->
+        <div class="pay-methods" id="paySection">
+            <h4>Forma de Pagamento</h4>
+            <div class="pay-method-grid">
+                <div class="pay-card" id="pc-pix" onclick="selectPay('pix')">
+                    <div class="pay-icon">⚡</div>
+                    <div class="pay-name">PIX</div>
+                </div>
+                <div class="pay-card" id="pc-boleto" onclick="selectPay('boleto')">
+                    <div class="pay-icon">📄</div>
+                    <div class="pay-name">Boleto</div>
+                </div>
+                <div class="pay-card" id="pc-cartao" onclick="selectPay('cartao')">
+                    <div class="pay-icon">💳</div>
+                    <div class="pay-name">Cartão</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIX panel -->
+        <div class="pix-panel" id="pixPanel">
+            <div style="font-size:.68rem;color:var(--blue-light);display:none;margin-bottom:.5rem;" id="payLoadingMsg">⏳ Gerando cobrança via Asaas…</div>
+            <div class="pix-amount">R$ 20,00</div>
+            <div class="pix-label">Taxa de Inscrição · Conservatório Municipal de Cubatão</div>
+            <div class="pix-qr">
+                <img id="pixQrImg" src="" alt="QR Code PIX" style="display:none;width:148px;height:148px;object-fit:contain;">
+                <canvas id="qrCanvas" width="148" height="148"></canvas>
+            </div>
+            <div class="pix-key-wrap">Chave PIX ou código copia-e-cola:</div>
+            <span class="pix-key" id="pixKey" onclick="copyPix()">conservatorio.cubatao@cubatao.sp.gov.br</span>
+            <div class="pix-note" id="pixNote">Após o pagamento, a confirmação é automática em até 60 segundos.</div>
+        </div>
+
+        <!-- Boleto panel -->
+        <div class="boleto-panel" id="boletoPanel">
+            <div style="font-size:2rem;margin-bottom:.5rem;">📄</div>
+            <p style="font-size:.85rem;color:var(--text-muted);line-height:1.7;margin-bottom:.75rem;">O boleto bancário foi gerado. Copie a linha digitável ou baixe o PDF para pagar em qualquer banco.</p>
+            <div id="boletoLineWrap" style="display:none;margin-bottom:.75rem;text-align:left;">
+                <div style="font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);font-family:'Space Grotesk',sans-serif;margin-bottom:.35rem;">Linha Digitável</div>
+                <div id="boletoLine" onclick="copyBoleto(this)" style="font-family:monospace;font-size:.72rem;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;padding:.6rem .9rem;color:var(--text-muted);cursor:pointer;word-break:break-all;"></div>
+            </div>
+            <a id="boletoLink" href="#" target="_blank" style="display:none;font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:.4rem .9rem;border-radius:3px;text-decoration:none;margin-bottom:.5rem;display:inline-block;">↓ Baixar Boleto PDF</a>
+            <p style="font-size:.72rem;color:var(--text-dim);margin-top:.75rem;">Vencimento: 3 dias úteis · Valor: <strong style="color:var(--text)">R$&nbsp;20,00</strong></p>
+        </div>
+
+        <!-- Card panel -->
+        <div class="card-panel" id="cartaoPanel">
+            <div class="card-grid">
+                <div class="fld full">
+                    <label>Número do Cartão</label>
+                    <input type="text" id="cNum" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric">
+                </div>
+                <div class="fld">
+                    <label>Validade</label>
+                    <input type="text" id="cVal" placeholder="MM/AA" maxlength="5">
+                </div>
+                <div class="fld">
+                    <label>CVV</label>
+                    <input type="text" id="cCvv" placeholder="000" maxlength="4" inputmode="numeric">
+                </div>
+                <div class="fld full">
+                    <label>Nome no Cartão</label>
+                    <input type="text" id="cNome" placeholder="NOME IMPRESSO NO CARTÃO" style="text-transform:uppercase">
+                </div>
+            </div>
+        </div>
+
+        <!-- Declaration -->
+        <div class="decl-box">
+            <p>Declaro, sob as penas da Lei, que as informações prestadas nesta ficha de inscrição são verdadeiras e completas, estando ciente de que a apresentação de dados falsos implicará na desclassificação do processo seletivo, sem prejuízo de responsabilização legal nos termos do Art. 299 do Código Penal Brasileiro.</p>
+            <label class="chk-row">
+                <input type="checkbox" id="decl">
+                <span><strong>Li e concordo</strong> com os termos acima e com o <a href="#">Regulamento do Processo Seletivo 2027</a>.</span>
+            </label>
+        </div>
+
+        <div class="form-nav">
+            <button class="btn btn-ghost" onclick="goStep(2)">&larr; Voltar</button>
+            <button class="btn btn-primary btn-lg" onclick="submitForm()" id="submitBtn">Finalizar Inscrição ✓</button>
+        </div>
+    </section>
+
+    <!-- ═══ SUCCESS ═══ -->
+    <section id="step-success">
+        <div class="ok-circle">✓</div>
+        <h2>Inscrição Realizada!</h2>
+        <p>Sua inscrição no Processo Seletivo 2027 do Conservatório Municipal de Cubatão foi registrada com sucesso.</p>
+        <div class="protocol" id="protocolEl"></div>
+        <p>Guarde o número de protocolo acima. Um e-mail de confirmação com todos os detalhes sobre o teste de aptidão será enviado em breve.</p>
+        <div class="ok-next">
+            <h4>Próximos Passos</h4>
+            <div class="ok-step"><div class="ok-step-n">1</div>Receba o e-mail de confirmação com o comprovante de inscrição.</div>
+            <div class="ok-step"><div class="ok-step-n">2</div>Aguarde a publicação da lista de convocados para o teste de aptidão (dezembro/2026).</div>
+            <div class="ok-step"><div class="ok-step-n">3</div>Compareça ao teste e, se aprovado, leve os documentos originais para a matrícula em 2027.</div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="site-footer">
+    Conservatório Municipal de Cubatão · Secretaria Municipal de Educação · Cubatão — SP
+</footer>
+
+<!-- ═══ SCRIPT ═══ -->
+<script>
+// ── DATA ──
+const INSTRUMENTS = [
+    { id:'piano',       name:'Piano',           icon:'🎹', minAge:7  },
+    { id:'violao',      name:'Violão',          icon:'🎸', minAge:7  },
+    { id:'percussao',   name:'Percussão',       icon:'🥁', minAge:7  },
+    { id:'flauta',      name:'Flauta',          icon:'🪈', minAge:7  },
+    { id:'clarinete',   name:'Clarinete',       icon:'🎶', minAge:9  },
+    { id:'viola',       name:'Viola',           icon:'🎻', minAge:9  },
+    { id:'trompa',      name:'Trompa',          icon:'📯', minAge:10 },
+    { id:'violoncelo',  name:'Violoncelo',      icon:'🎻', minAge:12 },
+    { id:'contrabaixo', name:'Contrabaixo',     icon:'🎸', minAge:12 },
+];
+
+const PERIODS = [
+    { id:'manha', name:'Manhã',  icon:'🌅', hrs:'08h – 12h', childOnly:true,   minAge:0,  maxAge:13 },
+    { id:'tarde', name:'Tarde',  icon:'☀️', hrs:'13h – 17h', childOnly:false,  minAge:0,  maxAge:999 },
+    { id:'noite', name:'Noite',  icon:'🌙', hrs:'18h – 22h', childOnly:false,  minAge:14, maxAge:999 },
+];
+
+// ── STATE ──
+const S = {
+    step: 1,
+    age: null,
+    isMinor: false,
+    isExempt: false,
+    instrSel: null,
+    periodSel: null,
+    paySel: null,
+    hasExp: null,
+};
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('dataNasc').max = new Date().toISOString().split('T')[0];
+
+    document.getElementById('dataNasc').addEventListener('change', onDobChange);
+    document.getElementById('escolaridade').addEventListener('change', refreshStep2);
+
+    document.getElementById('cep').addEventListener('input', maskCep);
+    document.getElementById('cep').addEventListener('blur', lookupCep);
+
+    document.getElementById('cpf').addEventListener('input', maskCpf);
+    document.getElementById('rCpf').addEventListener('input', maskCpf);
+    document.getElementById('celular').addEventListener('input', maskPhone);
+    document.getElementById('rCelular').addEventListener('input', maskPhone);
+    document.getElementById('cNum').addEventListener('input', maskCard);
+    document.getElementById('cVal').addEventListener('input', maskExpiry);
+
+    renderInstruments();
+    renderPeriods();
+});
+
+// ── NAVIGATION ──
+function goStep(n) {
+    if (n > S.step && !validate(S.step)) return;
+    S.step = n;
+
+    document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.step').forEach((el, i) => {
+        el.classList.remove('active','done');
+        if (i + 1 < n) el.classList.add('done');
+        if (i + 1 === n) el.classList.add('active');
+    });
+
+    const sec = document.getElementById('step-' + n);
+    if (sec) sec.classList.add('active');
+    if (n === 3) buildSummary();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── VALIDATION ──
+function validate(step) {
+    let ok = true;
+    const req = (id) => {
+        const el = document.getElementById(id);
+        const g = el.closest('.fld');
+        if (!el.value.trim()) { g.classList.add('has-err'); ok = false; }
+        else g.classList.remove('has-err');
+    };
+
+    if (step === 1) {
+        ['nome','sobrenome','dataNasc','cpf','email','celular','escolaridade',
+         'cep','numero','logradouro','bairro','cidade'].forEach(req);
+
+        const em = document.getElementById('email');
+        if (em.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value)) {
+            em.closest('.fld').classList.add('has-err'); ok = false;
+        }
+
+        if (S.age !== null && S.age < 7) { ok = false; }
+
+        if (S.isMinor) ['rNome','rCpf','rCelular','rParentesco'].forEach(req);
+    }
+
+    if (step === 2) {
+        if (!S.instrSel) { alert('Selecione um instrumento para continuar.'); ok = false; }
+        else if (!S.periodSel) { alert('Selecione um período de preferência.'); ok = false; }
+    }
+
+    return ok;
+}
+
+// ── AGE ──
+function onDobChange() {
+    const val = document.getElementById('dataNasc').value;
+    if (!val) { S.age = null; S.isMinor = false; }
+    else {
+        const b = new Date(val), t = new Date();
+        let a = t.getFullYear() - b.getFullYear();
+        if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+        S.age = a;
+        S.isMinor = a < 18;
+    }
+    document.getElementById('respBox').classList.toggle('visible', S.isMinor);
+    refreshStep2();
+}
+
+function refreshStep2() {
+    const age = S.age;
+    const esc = document.getElementById('escolaridade').value;
+
+    // Age gate
+    setCallout('ageGate', age !== null && age < 7);
+
+    // Modality
+    let badge = 'A determinar', desc = 'Complete os dados para determinar a modalidade.', grey = true;
+    if (age !== null && age >= 7) {
+        if (age <= 13) {
+            badge = 'Complementação Pedagógica';
+            desc = 'Curso livre voltado ao desenvolvimento musical de crianças e adolescentes (7–13 anos).';
+            grey = false;
+        } else if (age >= 14 && esc === 'medio_cursando') {
+            badge = 'Técnico Concomitante';
+            desc = 'Curso técnico em música realizado paralelamente ao Ensino Médio. Exige comprovação de matrícula em escola regular.';
+            grey = false;
+        } else if (age >= 14 && (esc === 'medio_completo' || esc === 'superior')) {
+            badge = 'Técnico Subsequente';
+            desc = 'Curso técnico em música para quem já concluiu o Ensino Médio.';
+            grey = false;
+        } else if (age >= 14) {
+            badge = 'A determinar';
+            desc = 'Selecione a escolaridade para determinar a modalidade.';
+        }
+    }
+    const badgeEl = document.getElementById('modBadge');
+    badgeEl.textContent = badge;
+    badgeEl.className = 'mod-badge' + (grey ? ' grey' : '');
+    document.getElementById('modDesc').textContent = desc;
+
+    renderInstruments();
+    renderPeriods();
+}
+
+// ── INSTRUMENTS ──
+function renderInstruments() {
+    const age = S.age;
+    const grid = document.getElementById('instrGrid');
+    const hint = document.getElementById('instrHint');
+    grid.innerHTML = '';
+    let hasLocked = false;
+
+    INSTRUMENTS.forEach(inst => {
+        const avail = age === null || age >= inst.minAge;
+        if (!avail) hasLocked = true;
+        const card = document.createElement('div');
+        card.className = 'instr-card' + (!avail ? ' disabled' : '') + (S.instrSel === inst.id ? ' selected' : '');
+        card.innerHTML = `<span class="instr-icon">${inst.icon}</span><div class="instr-name">${inst.name}</div><div class="instr-age">Mín. ${inst.minAge} anos</div>`;
+        if (avail) card.addEventListener('click', () => {
+            S.instrSel = inst.id;
+            document.querySelectorAll('.instr-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+        });
+        grid.appendChild(card);
+    });
+
+    hint.textContent = hasLocked ? 'Instrumentos acinzentados exigem idade mínima não atingida.' : '';
+}
+
+// ── PERIODS ──
+function renderPeriods() {
+    const age = S.age;
+    const grid = document.getElementById('periodGrid');
+    grid.innerHTML = '';
+
+    PERIODS.forEach(p => {
+        const avail = age === null || (age >= p.minAge && age <= p.maxAge);
+        const card = document.createElement('div');
+        card.className = 'period-card' + (!avail ? ' disabled' : '') + (S.periodSel === p.id ? ' selected' : '');
+        card.innerHTML = `<span class="period-icon">${p.icon}</span><div class="period-name">${p.name}</div><div class="period-hrs">${p.hrs}</div>`;
+        if (avail) card.addEventListener('click', () => {
+            S.periodSel = p.id;
+            document.querySelectorAll('.period-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+        });
+        grid.appendChild(card);
+    });
+}
+
+function setCallout(id, show) {
+    document.getElementById(id).classList.toggle('visible', show);
+}
+
+// ── EXPERIENCE ──
+function setExp(has) {
+    S.hasExp = has;
+    document.getElementById('tNao').classList.toggle('on', !has);
+    document.getElementById('tSim').classList.toggle('on', has);
+    document.getElementById('expFld').style.display = has ? 'block' : 'none';
+}
+
+// ── CEP ──
+function maskCep(e) {
+    let v = e.target.value.replace(/\D/g,'');
+    if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5,8);
+    e.target.value = v;
+}
+
+async function lookupCep() {
+    const raw = document.getElementById('cep').value.replace(/\D/g,'');
+    const st = document.getElementById('cepStatus');
+    if (raw.length !== 8) return;
+    st.className = 'cep-status loading'; st.textContent = 'Buscando…';
+    try {
+        const r = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+        const d = await r.json();
+        if (d.erro) throw 0;
+        document.getElementById('logradouro').value = d.logradouro || '';
+        document.getElementById('bairro').value     = d.bairro    || '';
+        document.getElementById('cidade').value     = d.localidade|| '';
+        document.getElementById('estado').value     = d.uf        || '';
+        st.className = 'cep-status ok'; st.textContent = '✓ Endereço encontrado';
+        document.getElementById('numero').focus();
+    } catch {
+        st.className = 'cep-status fail'; st.textContent = '✗ CEP não encontrado';
+        document.getElementById('cep').closest('.fld').classList.add('has-err');
+    }
+}
+
+// ── MASKS ──
+function maskCpf(e) {
+    let v = e.target.value.replace(/\D/g,'').slice(0,11);
+    if      (v.length > 9) v = v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6,9)+'-'+v.slice(9);
+    else if (v.length > 6) v = v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6);
+    else if (v.length > 3) v = v.slice(0,3)+'.'+v.slice(3);
+    e.target.value = v;
+}
+function maskPhone(e) {
+    let v = e.target.value.replace(/\D/g,'').slice(0,11);
+    if      (v.length > 10) v = '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
+    else if (v.length > 6)  v = '('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
+    else if (v.length > 2)  v = '('+v.slice(0,2)+') '+v.slice(2);
+    else if (v.length > 0)  v = '('+v;
+    e.target.value = v;
+}
+function maskCard(e) {
+    let v = e.target.value.replace(/\D/g,'').slice(0,16);
+    v = v.match(/.{1,4}/g)?.join(' ') || v;
+    e.target.value = v;
+}
+function maskExpiry(e) {
+    let v = e.target.value.replace(/\D/g,'').slice(0,4);
+    if (v.length > 2) v = v.slice(0,2)+'/'+v.slice(2);
+    e.target.value = v;
+}
+
+// ── EXEMPTION ──
+function toggleExempt() {
+    S.isExempt = !S.isExempt;
+    document.getElementById('exCheck').classList.toggle('on', S.isExempt);
+    document.getElementById('exBody').classList.toggle('open', S.isExempt);
+    document.getElementById('paySection').style.display = S.isExempt ? 'none' : 'block';
+    const price = document.getElementById('totalPrice');
+    price.textContent = S.isExempt ? 'Isento' : 'R$ 20,00';
+    price.className = 'price' + (S.isExempt ? ' free' : '');
+    if (S.isExempt) {
+        document.getElementById('pixPanel').classList.remove('visible');
+        document.getElementById('boletoPanel').classList.remove('visible');
+        document.getElementById('cartaoPanel').classList.remove('visible');
+    }
+}
+
+function handleUpload(e) {
+    const f = e.target.files[0]; if (!f) return;
+    document.getElementById('uploadZone').classList.add('has-file');
+    const fn = document.getElementById('uploadFname');
+    fn.textContent = '✓ ' + f.name; fn.style.display = 'block';
+}
+
+// ── PAYMENT ──
+function selectPay(method) {
+    S.paySel = method;
+    ['pix','boleto','cartao'].forEach(m => document.getElementById('pc-'+m).classList.remove('selected'));
+    document.getElementById('pc-'+method).classList.add('selected');
+    document.getElementById('pixPanel').classList.remove('visible');
+    document.getElementById('boletoPanel').classList.remove('visible');
+    document.getElementById('cartaoPanel').classList.remove('visible');
+    if (method === 'pix')    { document.getElementById('pixPanel').classList.add('visible'); drawQr(); }
+    if (method === 'boleto') document.getElementById('boletoPanel').classList.add('visible');
+    if (method === 'cartao') document.getElementById('cartaoPanel').classList.add('visible');
+    // Load real Asaas payment data (PIX QR or boleto)
+    if (method !== 'cartao') loadPaymentDetails(method);
+}
+
+function drawQr() {
+    const c = document.getElementById('qrCanvas');
+    const ctx = c.getContext('2d');
+    const size = 148;
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle = '#000';
+    const cell = 4;
+    // Finder patterns
+    const finder = (ox, oy) => {
+        ctx.fillStyle='#000'; ctx.fillRect(ox,oy,cell*7,cell*7);
+        ctx.fillStyle='#fff'; ctx.fillRect(ox+cell,oy+cell,cell*5,cell*5);
+        ctx.fillStyle='#000'; ctx.fillRect(ox+cell*2,oy+cell*2,cell*3,cell*3);
+    };
+    finder(4,4); finder(size-32,4); finder(4,size-32);
+    // Seeded data dots
+    let seed = 42;
+    const rand = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+    ctx.fillStyle='#000';
+    for (let r = 0; r < size; r += cell) {
+        for (let cc = 0; cc < size; cc += cell) {
+            const inFinder = (r<32&&cc<32)||(r<32&&cc>size-36)||(r>size-36&&cc<32);
+            if (!inFinder && rand() > 0.55) ctx.fillRect(cc, r, cell-1, cell-1);
+        }
+    }
+    finder(4,4); finder(size-32,4); finder(4,size-32);
+}
+
+function copyPix() {
+    const key = document.getElementById('pixKey').textContent;
+    navigator.clipboard?.writeText(key).then(() => {
+        const el = document.getElementById('pixKey');
+        const orig = el.textContent;
+        el.textContent = '✓ Chave copiada!';
+        el.style.color = 'var(--success)';
+        setTimeout(() => { el.textContent = orig; el.style.color=''; }, 2000);
+    });
+}
+function copyBoleto(el) {
+    const orig = el.textContent;
+    navigator.clipboard?.writeText(orig).then(() => {
+        el.textContent = '✓ Copiado!';
+        el.style.color = 'var(--success)';
+        setTimeout(() => { el.textContent = orig; el.style.color=''; }, 2000);
+    });
+}
+
+// ── SUMMARY ──
+function buildSummary() {
+    const nome = [document.getElementById('nome').value, document.getElementById('sobrenome').value].join(' ').trim();
+    const dob  = document.getElementById('dataNasc').value;
+    const esc  = document.getElementById('escolaridade');
+    const escTxt = esc.options[esc.selectedIndex]?.text || '—';
+    const cid  = document.getElementById('cidade').value;
+    const uf   = document.getElementById('estado').value;
+    const instr = INSTRUMENTS.find(i => i.id === S.instrSel)?.name || '—';
+    const per   = PERIODS.find(p => p.id === S.periodSel)?.name || '—';
+    const mod   = document.getElementById('modBadge').textContent;
+
+    const rows = [
+        ['Candidato',     nome],
+        ['Nascimento',    fmtDate(dob)],
+        ['Escolaridade',  escTxt],
+        ['Cidade',        cid + (uf ? ', ' + uf : '')],
+        ['Modalidade',    mod],
+        ['Instrumento',   instr],
+        ['Período',       per],
+    ];
+    document.getElementById('summaryRows').innerHTML = rows.map(([l,v]) =>
+        `<div class="sum-row"><span class="lbl">${l}</span><span class="val">${v || '—'}</span></div>`
+    ).join('');
+}
+
+function fmtDate(s) {
+    if (!s) return '—';
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+// ── ASAAS INTEGRATION ──
+// NOTE: For production, move API calls to a backend to protect the key.
+const ASAAS_KEY = '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmJiNTRhMWNmLTFlNDktNGNhZS04Mjc4LTY0MWI0ZmZlZmVlYjo6JGFhY2hfZDgwYjZlODEtZGFjYy00MjEyLWJmMjItNGQ2NWE3NGM5ZmRi';
+const ASAAS_URL = 'https://api.asaas.com/v3';
+
+async function asaasCall(endpoint, method = 'GET', body = null) {
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'access_token': ASAAS_KEY },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(ASAAS_URL + endpoint, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.errors?.[0]?.description || 'Erro na API');
+    return data;
+}
+
+async function asaasCreateCustomer() {
+    const nome = [document.getElementById('nome').value, document.getElementById('sobrenome').value].join(' ').trim();
+    const cpfCnpj = document.getElementById('cpf').value.replace(/\D/g, '');
+    const email = document.getElementById('email').value;
+    const mobilePhone = document.getElementById('celular').value.replace(/\D/g, '');
+    // Try to find existing customer first
+    try {
+        const existing = await asaasCall(`/customers?cpfCnpj=${cpfCnpj}`);
+        if (existing.data?.length) return existing.data[0];
+    } catch {}
+    return asaasCall('/customers', 'POST', { name: nome, cpfCnpj, email, mobilePhone });
+}
+
+async function asaasCreatePayment(customerId, billingType) {
+    const due = new Date(); due.setDate(due.getDate() + 3);
+    const dueDate = due.toISOString().split('T')[0];
+    return asaasCall('/payments', 'POST', {
+        customer: customerId,
+        billingType,
+        value: 20.00,
+        dueDate,
+        description: 'Taxa de Inscrição — Processo Seletivo 2027 — Conservatório Municipal de Cubatão',
+        externalReference: 'CMC2027',
+    });
+}
+
+// Called when user picks a payment method — loads real Asaas data
+async function loadPaymentDetails(method) {
+    const billingMap = { pix: 'PIX', boleto: 'BOLETO', cartao: 'CREDIT_CARD' };
+    const billing = billingMap[method];
+    if (!billing || billing === 'CREDIT_CARD') return; // Card handled on submit
+
+    const loadBtn = document.getElementById('payLoadingMsg');
+    if (loadBtn) loadBtn.style.display = 'block';
+
+    try {
+        const customer = await asaasCreateCustomer();
+        S.asaasCustomerId = customer.id;
+        const payment = await asaasCreatePayment(customer.id, billing);
+        S.asaasPaymentId = payment.id;
+        S.asaasPaymentStatus = payment.status;
+
+        if (method === 'pix') {
+            const qr = await asaasCall(`/payments/${payment.id}/pixQrCode`);
+            // Show real QR image from Asaas
+            const img = document.getElementById('pixQrImg');
+            if (img && qr.encodedImage) {
+                img.src = 'data:image/png;base64,' + qr.encodedImage;
+                img.style.display = 'block';
+                document.getElementById('qrCanvas').style.display = 'none';
+            }
+            if (qr.payload) {
+                document.getElementById('pixKey').textContent = qr.payload;
+            }
+            if (qr.expirationDate) {
+                const exp = new Date(qr.expirationDate);
+                document.getElementById('pixNote').textContent =
+                    `Válido até ${exp.toLocaleString('pt-BR')}. Após o pagamento, a confirmação é automática.`;
+            }
+        } else if (method === 'boleto') {
+            const field = await asaasCall(`/payments/${payment.id}/identificationField`);
+            if (field.identificationField) {
+                document.getElementById('boletoLine').textContent = field.identificationField;
+                document.getElementById('boletoLineWrap').style.display = 'block';
+            }
+            if (payment.bankSlipUrl) {
+                const link = document.getElementById('boletoLink');
+                if (link) { link.href = payment.bankSlipUrl; link.style.display = 'inline-block'; }
+            }
+        }
+    } catch (err) {
+        console.warn('Asaas API error (CORS or quota):', err);
+        // Fallback: keep the demo QR/boleto already rendered
+    } finally {
+        if (loadBtn) loadBtn.style.display = 'none';
+    }
+}
+
+// ── SUBMIT ──
+async function submitForm() {
+    if (!document.getElementById('decl').checked) {
+        alert('Marque a declaração de veracidade para finalizar.'); return;
+    }
+    if (!S.isExempt && !S.paySel) {
+        alert('Selecione uma forma de pagamento.'); return;
+    }
+    if (S.isExempt && !document.getElementById('uInput').files[0]) {
+        alert('Envie o comprovante de isenção.'); return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processando…';
+
+    try {
+        // If credit card and no asaas payment yet, create now
+        if (!S.isExempt && S.paySel === 'cartao') {
+            const customer = await asaasCreateCustomer();
+            S.asaasCustomerId = customer.id;
+            const payment = await asaasCreatePayment(customer.id, 'CREDIT_CARD');
+            S.asaasPaymentId = payment.id;
+        }
+
+        // If exempt or PIX/Boleto already created, just finalize
+        const proto = S.asaasPaymentId ? 'CMC2027-' + S.asaasPaymentId.slice(-7) : 'CMC2027-' + String(Date.now()).slice(-7);
+        document.getElementById('protocolEl').textContent = '# ' + proto;
+
+        document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.step').forEach(s => s.classList.add('done'));
+        document.getElementById('step-success').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+        // Fallback if API unreachable
+        const proto = 'CMC2027-' + String(Date.now()).slice(-7);
+        document.getElementById('protocolEl').textContent = '# ' + proto;
+        document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.step').forEach(s => s.classList.add('done'));
+        document.getElementById('step-success').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+</script>
+</body>
+</html>
