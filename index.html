@@ -1247,17 +1247,19 @@ function fmtDate(s) {
 }
 
 // ── ASAAS INTEGRATION ──
-// NOTE: For production, move API calls to a backend to protect the key.
-const ASAAS_KEY = '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmJiNTRhMWNmLTFlNDktNGNhZS04Mjc4LTY0MWI0ZmZlZmVlYjo6JGFhY2hfZDgwYjZlODEtZGFjYy00MjEyLWJmMjItNGQ2NWE3NGM5ZmRi';
-const ASAAS_URL = 'https://api.asaas.com/v3';
+// IMPORTANT: Never call the Asaas API directly from the browser with an API key —
+// the key would be exposed to anyone viewing the page source. All Asaas calls
+// must go through a backend endpoint (e.g. /api/asaas/*) that holds the secret
+// key server-side. The endpoint below is a placeholder for that backend proxy.
+const ASAAS_PROXY_URL = '/api/asaas';
 
 async function asaasCall(endpoint, method = 'GET', body = null) {
     const opts = {
         method,
-        headers: { 'Content-Type': 'application/json', 'access_token': ASAAS_KEY },
+        headers: { 'Content-Type': 'application/json' },
     };
     if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(ASAAS_URL + endpoint, opts);
+    const res = await fetch(ASAAS_PROXY_URL + endpoint, opts);
     const data = await res.json();
     if (!res.ok) throw new Error(data?.errors?.[0]?.description || 'Erro na API');
     return data;
