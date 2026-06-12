@@ -81,6 +81,26 @@ a chave fica só no servidor, em uma variável de ambiente.
 Qualquer outro caminho `/api/asaas/<algo>` é repassado automaticamente para
 `https://api.asaas.com/v3/<algo>`.
 
+## Webhook do Asaas → Google Apps Script
+
+O backend expõe `POST /api/webhook/asaas`, que repassa o evento recebido
+para o `doPost(e)` do Web App do Google Apps Script (que atualiza a
+planilha, recalcula o ranking e dispara os e-mails de confirmação).
+
+1. No `.env`, configure:
+   - `GAS_WEBHOOK_URL` = URL de implantação do Web App do GAS (termina em `/exec`)
+   - `ASAAS_WEBHOOK_TOKEN` = um token secreto qualquer (gere uma string aleatória)
+
+2. No painel da Asaas, vá em **Integrações > Webhooks** e cadastre:
+   - URL: `https://seu-dominio/api/webhook/asaas`
+   - Eventos: `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`
+   - Token de acesso (header `asaas-access-token`): o mesmo valor de `ASAAS_WEBHOOK_TOKEN`
+
+3. Reinicie o backend após editar o `.env`:
+   ```bash
+   pm2 restart asaas-backend --update-env
+   ```
+
 ## Ajustar o front-end
 
 No `index.html`, a constante `ASAAS_PROXY_URL` deve apontar para o seu domínio:

@@ -24,6 +24,8 @@ read -rp "Domínio (ex: conservatoriocubatao.com.br): " DOMAIN
 read -rp "Chave da API Asaas (começa com \$aact_): " ASAAS_KEY
 read -rp "Ambiente Asaas [producao/sandbox] (padrão: producao): " ASAAS_ENV
 ASAAS_ENV=${ASAAS_ENV:-producao}
+read -rp "URL do Web App do Google Apps Script (doPost, termina em /exec) [opcional, ENTER p/ pular]: " GAS_WEBHOOK_URL
+read -rp "Token secreto do webhook Asaas (asaas-access-token) [opcional, ENTER p/ pular]: " ASAAS_WEBHOOK_TOKEN
 
 if [ "$ASAAS_ENV" = "sandbox" ]; then
   ASAAS_URL="https://sandbox.asaas.com/api/v3"
@@ -61,6 +63,8 @@ ASAAS_KEY=$ASAAS_KEY
 ASAAS_URL=$ASAAS_URL
 PORT=$PORT
 ALLOWED_ORIGIN=https://$DOMAIN
+GAS_WEBHOOK_URL=$GAS_WEBHOOK_URL
+ASAAS_WEBHOOK_TOKEN=$ASAAS_WEBHOOK_TOKEN
 EOF
 chmod 600 "$APP_DIR/.env"
 

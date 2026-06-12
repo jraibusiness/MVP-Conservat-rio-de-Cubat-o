@@ -6,6 +6,8 @@ const ASAAS_KEY = process.env.ASAAS_KEY;
 const ASAAS_URL = process.env.ASAAS_URL || 'https://api.asaas.com/v3';
 const PORT = process.env.PORT || 3001;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
+const GAS_WEBHOOK_URL = process.env.GAS_WEBHOOK_URL;
+const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN;
 
 if (!ASAAS_KEY) {
     console.error('ERRO: variável de ambiente ASAAS_KEY não definida. Configure o arquivo .env.');
@@ -41,6 +43,33 @@ app.all(/^\/api\/asaas\/(.*)/, async (req, res) => {
         res.status(status).json(data);
     } catch (err) {
         res.status(500).json({ errors: [{ description: err.message }] });
+    }
+});
+
+// Recebe o webhook do Asaas (configurado em Asaas > Integrações > Webhooks)
+// e repassa o evento para o Web App do Google Apps Script (doPost).
+app.post('/api/webhook/asaas', async (req, res) => {
+    // Valida o token enviado pelo Asaas no header "asaas-access-token"
+    if (ASAAS_WEBHOOK_TOKEN && req.headers['asaas-access-token'] !== ASAAS_WEBHOOK_TOKEN) {
+        return res.status(401).json({ erro: 'token inválido' });
+    }
+
+    if (!GAS_WEBHOOK_URL) {
+        console.error('GAS_WEBHOOK_URL não configurada; evento recebido mas não repassado.');
+        return res.status(500).json({ erro: 'GAS_WEBHOOK_URL não configurada' });
+    }
+
+    try {
+        const gasRes = await fetch(GAS_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+            redirect: 'follow',
+        });
+        const text = await gasRes.text();
+        res.status(200).json({ recebido: true, gas: text });
+    } catch (err) {
+        res.status(500).json({ erro: err.message });
     }
 });
 
