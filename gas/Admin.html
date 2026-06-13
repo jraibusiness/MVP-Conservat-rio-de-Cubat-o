@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{ --azul:#1D8ECE; --vermelho:#E2231A; --verde:#009E49; --amarelo:#FFF200; --cinza:#C3C3C3; }
+    body{font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;margin:0;}
+    .card{background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);max-width:850px;margin:auto;}
+    h2,h1{color:var(--azul);margin-top:0;text-align:center;}
+    input,select{width:100%;padding:12px;margin:10px 0;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;font-size:15px;}
+    button{padding:12px 20px;background:var(--azul);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:15px;font-weight:bold;}
+    button:hover{background:#1577ad;} button:disabled{opacity:.6;cursor:not-allowed;}
+    .btn-salvar{background:var(--verde);font-size:18px;margin-top:20px;width:100%;}
+    .btn-salvar:hover{background:#00813c;}
+    .btn-sec{background:#fff;color:var(--azul);border:1px solid var(--azul);padding:8px 14px;font-size:13px;}
+    .btn-sec:hover{background:#eef6fb;}
+    .step{display:none;} .active{display:block;}
+    table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px;}
+    th,td{padding:10px;border:1px solid #ddd;text-align:left;}
+    th{background:#e2e8f0;color:#333;}
+    .painel-secao{border:1px solid #eee;padding:20px;border-radius:6px;margin-bottom:25px;background:#fafafa;text-align:left;}
+    .painel-secao h3{margin-top:0;font-size:16px;border-bottom:1px solid #ddd;padding-bottom:8px;color:var(--azul);}
+    .dash-container{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px;}
+    .dash-card{background:#fff;padding:15px;border-radius:6px;text-align:center;border:1px solid #e2e8f0;}
+    .dash-card h4{margin:0;font-size:12px;color:#64748b;text-transform:uppercase;}
+    .dash-card .valor{font-size:24px;font-weight:bold;color:#1a202c;margin-top:6px;}
+    .barra-progresso-bg{background:#e2e8f0;border-radius:10px;height:12px;width:100%;overflow:hidden;margin-top:5px;}
+    .barra-progresso-fill{background:var(--verde);height:100%;width:0%;transition:width 1s;}
+    .menu-voltar{text-align:center;margin-top:20px;font-size:14px;}
+    .menu-voltar a{color:#666;text-decoration:none;font-weight:bold;}
+    .link-qr-style{display:none;color:var(--vermelho);font-weight:bold;text-decoration:none;margin-top:15px;text-align:center;}
+    .spinner{display:inline-block;width:15px;height:15px;border:3px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-90px);background:#161616;color:#fff;padding:14px 22px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;opacity:0;transition:.3s;z-index:9999;border-left:4px solid var(--verde);max-width:90%;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .toast.erro{border-left-color:var(--vermelho);}
+    @media print{ .painel-secao:not(#secao-print), #secao-busca, #secao-status, #secao-vagas, .menu-voltar, .btn-salvar, #link-qr, .acoes-export{display:none!important;} body{background:#fff;} .card{box-shadow:none;} }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="step-email" class="step active">
+      <h1>Acesso Restrito Administrativo</h1>
+      <input type="email" id="email" placeholder="E-mail funcional cadastrado">
+      <button onclick="solicitarCodigo()" id="btn-email" style="width:100%;">Enviar Token de Acesso</button>
+      <div id="erro-email" style="color:red;margin-top:10px;display:none;"></div>
+    </div>
+
+    <div id="step-codigo" class="step">
+      <h1>Verificação de Segurança (2 Fatores)</h1>
+      <p style="text-align:center;">Insira o código de 6 dígitos enviado ao seu e-mail.</p>
+      <input type="text" id="codigo" placeholder="000000" maxlength="6" style="font-size:20px;letter-spacing:5px;">
+      <button onclick="validarCodigo()" id="btn-codigo" style="width:100%;">Autenticar e Entrar</button>
+      <div id="erro-codigo" style="color:red;margin-top:10px;display:none;"></div>
+    </div>
+
+    <div id="step-painel" class="step">
+      <h2 id="titulo-painel">Painel de Controle Operacional</h2>
+
+      <div class="painel-secao" id="secao-print">
+        <h3>📊 Resumo Operacional Macro</h3>
+        <div class="dash-container">
+          <div class="dash-card"><h4>Total Intenções</h4><div class="valor" id="dash-total">0</div></div>
+          <div class="dash-card"><h4>Vagas Pagas</h4><div class="valor" id="dash-pagos" style="color:var(--verde);">0</div></div>
+          <div class="dash-card"><h4>Aguardando Pgto</h4><div class="valor" id="dash-pendentes" style="color:#b38f00;">0</div></div>
+          <div class="dash-card"><h4>Taxa Ocupação</h4><div class="valor" id="dash-porcentagem">0%</div></div>
+        </div>
+        <label><b>Preenchimento Geral de Vagas:</b></label>
+        <div class="barra-progresso-bg"><div id="barra-fill" class="barra-progresso-fill"></div></div>
+
+        <table style="margin-top:18px;">
+          <thead><tr>
+            <th>Instrumento</th>
+            <th style="text-align:center;background:#f0f4f8;">Total</th>
+            <th style="text-align:center;background:#eafaf1;color:green;">Pagas</th>
+            <th style="text-align:center;background:#fffde6;color:#b38f00;">Pendentes</th>
+            <th style="text-align:center;">Vagas</th>
+          </tr></thead>
+          <tbody id="corpo-tabela-breakdown"><tr><td colspan="5"><span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Processando dados...</td></tr></tbody>
+        </table>
+        <div class="acoes-export" style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn-sec" onclick="exportarCSV()">⬇ Exportar CSV</button>
+          <button class="btn-sec" onclick="window.print()">🖨 Imprimir</button>
+          <button class="btn-sec" id="btn-pdf" onclick="exportarPDF()">📄 Relatório PDF</button>
+        </div>
+      </div>
+
+      <div class="painel-secao" id="secao-busca">
+        <h3>🔍 Consulta de Alunos</h3>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="termo-busca" placeholder="Nome, Sobrenome, CPF ou E-mail">
+          <button onclick="buscarCandidato()" id="btn-busca" style="margin-top:10px;height:45px;">Pesquisar</button>
+        </div>
+        <div id="resultado-busca" style="margin-top:15px;font-size:13px;background:#fff;padding:12px;border-radius:4px;max-height:220px;overflow-y:auto;border:1px solid #ddd;line-height:1.5;">Insira os critérios e clique em Pesquisar.</div>
+      </div>
+
+      <div class="painel-secao" id="secao-status">
+        <h3>⚙ 1. Trava Manual e Calendário</h3>
+        <label><b>Acessibilidade do Formulário:</b></label>
+        <select id="status-manual">
+          <option value="ABERTO">Formulário Aberto (Operação Normal)</option>
+          <option value="FECHADO">Forçar Fechamento Imediato</option>
+        </select>
+        <label style="display:block;margin-top:15px;"><b>Data/Horário Limite de Encerramento:</b></label>
+        <input type="datetime-local" id="data-encerramento">
+      </div>
+
+      <div class="painel-secao" id="secao-vagas">
+        <h3>📐 2. Limites de Vagas</h3>
+        <table id="tabela-vagas">
+          <thead><tr><th>Instrumento / Curso</th><th>Vagas</th><th>Ação</th></tr></thead>
+          <tbody id="lista-vagas"></tbody>
+        </table>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+          <input type="text" id="novo-curso" placeholder="Ex: Saxofone">
+          <input type="number" id="novas-vagas" placeholder="Qtd" style="width:100px;">
+          <button onclick="adicionarCurso()" style="margin-top:10px;height:45px;">+</button>
+        </div>
+      </div>
+
+      <button onclick="salvarAlteracoes()" class="btn-salvar" id="btn-salvar">Salvar Todas as Alterações</button>
+      <div style="text-align:center;margin-top:15px;">
+        <a href="#" id="link-qr" class="link-qr-style">Baixar QR Code de Divulgação</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-voltar"><a href="<?= ScriptApp.getService().getUrl() ?>">⬅ Voltar à tela inicial</a></div>
+
+  <script>
+    let emailAdmin='', configuracoesVagas=[], ultimoBreakdown={};
+
+    function toast(msg,tipo){
+      let t=document.getElementById('toast');
+      if(!t){ t=document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
+      t.className='toast '+(tipo||''); t.innerText=msg;
+      requestAnimationFrame(()=>t.classList.add('show'));
+      clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),3500);
+    }
+    function mostrarErro(id,msg){ const el=document.getElementById(id); el.innerText=msg; el.style.display='block'; }
+    function carregando(btn,txt){ btn.dataset.orig=btn.innerText; btn.disabled=true; btn.innerHTML='<span class="spinner"></span>'+txt; }
+    function restaurar(btn){ btn.disabled=false; btn.innerText=btn.dataset.orig; }
+
+    function solicitarCodigo(){
+      document.getElementById('erro-email').style.display='none';
+      emailAdmin=document.getElementById('email').value.trim();
+      if(!emailAdmin) return;
+      const btn=document.getElementById('btn-email'); carregando(btn,'Enviando...');
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res.sucesso){ document.getElementById('step-email').classList.remove('active'); document.getElementById('step-codigo').classList.add('active'); toast('Token enviado ao seu e-mail.'); }
+        else mostrarErro('erro-email',res.message);
+      }).withFailureHandler(function(){ restaurar(btn); mostrarErro('erro-email','Falha ao enviar. Tente novamente.'); }).solicitarAcessoAdmin(emailAdmin);
+    }
+
+    function validarCodigo(){
+      document.getElementById('erro-codigo').style.display='none';
+      const codigo=document.getElementById('codigo').value.trim();
+      if(!codigo) return;
+      const btn=document.getElementById('btn-codigo'); carregando(btn,'Validando...');
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res.sucesso){ document.getElementById('step-codigo').classList.remove('active'); carregarDadosPainel(res.nivel); }
+        else mostrarErro('erro-codigo',res.message);
+      }).withFailureHandler(function(){ restaurar(btn); mostrarErro('erro-codigo','Falha na validação.'); }).validarCodigoAdmin(emailAdmin,codigo);
+    }
+
+    function carregarDadosPainel(nivel){
+      document.getElementById('step-painel').classList.add('active');
+      if(nivel!=='DIRETOR'){
+        document.getElementById('secao-status').style.display='none';
+        document.getElementById('secao-vagas').style.display='none';
+        document.getElementById('btn-salvar').style.display='none';
+        document.getElementById('link-qr').style.display='none';
+        document.getElementById('titulo-painel').innerText='Painel do Professor';
+      }else{
+        google.script.run.withSuccessHandler(function(d){
+          const l=document.getElementById('link-qr'); l.href=d.qr; l.target='_blank'; l.style.display='inline-block';
+        }).obterUrlQrInscricao();
+      }
+
+      google.script.run.withSuccessHandler(function(dados){
+        configuracoesVagas=dados.vagas;
+        ultimoBreakdown=dados.detalheInstrumentos;
+        document.getElementById('status-manual').value=dados.statusManual||'ABERTO';
+        document.getElementById('data-encerramento').value=dados.dataEncerramento||'';
+        renderizarTabelaVagas();
+
+        const tb=document.getElementById('corpo-tabela-breakdown'); tb.innerHTML='';
+        Object.keys(dados.detalheInstrumentos).forEach(function(key){
+          const it=dados.detalheInstrumentos[key];
+          tb.innerHTML+='<tr><td><strong>'+key+'</strong></td>'
+            +'<td style="text-align:center;background:#f0f4f8;font-weight:bold;">'+it.total+'</td>'
+            +'<td style="text-align:center;background:#eafaf1;color:green;font-weight:bold;">'+it.pagos+'</td>'
+            +'<td style="text-align:center;background:#fffde6;color:#b38f00;">'+it.pendentes+'</td>'
+            +'<td style="text-align:center;color:#555;">'+it.limite+'</td></tr>';
+        });
+
+        document.getElementById('dash-total').innerText=dados.dashboard.totalInscricoes;
+        document.getElementById('dash-pagos').innerText=dados.dashboard.pagos;
+        document.getElementById('dash-pendentes').innerText=dados.dashboard.aguardando;
+        let pct=dados.dashboard.capacidadeTotal>0?Math.round((dados.dashboard.pagos/dados.dashboard.capacidadeTotal)*100):0;
+        document.getElementById('dash-porcentagem').innerText=pct+'%';
+        document.getElementById('barra-fill').style.width=pct+'%';
+      }).obterDadosPainelCompleto();
+    }
+
+    function renderizarTabelaVagas(){
+      const tbody=document.getElementById('lista-vagas'); tbody.innerHTML='';
+      configuracoesVagas.forEach((item,index)=>{
+        tbody.innerHTML+='<tr>'
+          +'<td><input type="text" value="'+item.instrumento+'" onchange="atualizarItem('+index+',\'instrumento\',this.value)"></td>'
+          +'<td><input type="number" value="'+item.vagas+'" onchange="atualizarItem('+index+',\'vagas\',this.value)" style="width:70px;"></td>'
+          +'<td><button style="background:#dc3545;padding:5px 10px;" onclick="removerCurso('+index+')">X</button></td></tr>';
+      });
+    }
+    function atualizarItem(index,campo,valor){ configuracoesVagas[index][campo]=valor; }
+    function removerCurso(index){ configuracoesVagas.splice(index,1); renderizarTabelaVagas(); }
+    function adicionarCurso(){
+      const curso=document.getElementById('novo-curso').value.trim(), vagas=document.getElementById('novas-vagas').value.trim();
+      if(curso&&vagas){ configuracoesVagas.push({instrumento:curso,vagas:parseInt(vagas)});
+        document.getElementById('novo-curso').value=''; document.getElementById('novas-vagas').value=''; renderizarTabelaVagas(); }
+    }
+
+    function buscarCandidato(){
+      const termo=document.getElementById('termo-busca').value; if(!termo) return;
+      const btn=document.getElementById('btn-busca'); carregando(btn,'...');
+      document.getElementById('resultado-busca').innerHTML='<span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Varrendo base de dados...';
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res.length===0){ document.getElementById('resultado-busca').innerHTML='Nenhum registro localizado.'; return; }
+        let html='';
+        for(let i=0;i<res.length;i++){ let c=res[i];
+          html+='<div style="border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:6px;"><strong>'+c.nome+'</strong> - CPF: '+c.cpf+'<br>'
+            +'<span style="color:#555">Curso: '+c.instrumento+' | Status: <b>'+c.status+'</b> | Data: '+c.data+'</span></div>';
+        }
+        document.getElementById('resultado-busca').innerHTML=html;
+      }).withFailureHandler(function(){ restaurar(btn); toast('Falha na busca.','erro'); }).adminConsultarCandidato(termo);
+    }
+
+    function salvarAlteracoes(){
+      const btn=document.getElementById('btn-salvar'); carregando(btn,'Salvando...');
+      const pacote={ vagas:configuracoesVagas, statusManual:document.getElementById('status-manual').value, dataEncerramento:document.getElementById('data-encerramento').value };
+      google.script.run.withSuccessHandler(function(){
+        restaurar(btn); toast('Configurações sincronizadas com sucesso!'); carregarDadosPainel('DIRETOR');
+      }).withFailureHandler(function(){ restaurar(btn); toast('Falha ao salvar.','erro'); }).salvarDadosPainelCompleto(pacote);
+    }
+
+    function exportarCSV(){
+      const rows=[['Instrumento','Total','Pagas','Pendentes','Vagas']];
+      Object.keys(ultimoBreakdown).forEach(k=>{ const i=ultimoBreakdown[k]; rows.push([k,i.total,i.pagos,i.pendentes,i.limite]); });
+      const csv=rows.map(r=>r.join(';')).join('\n');
+      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='estatisticas_inscricoes_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+      toast('CSV exportado.');
+    }
+
+    function exportarPDF(){
+      const btn=document.getElementById('btn-pdf'); carregando(btn,'Gerando...');
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res && res.url){ window.open(res.url,'_blank'); toast('Relatório PDF gerado: '+res.nome); }
+        else toast('Falha ao gerar relatório.','erro');
+      }).withFailureHandler(function(err){ restaurar(btn); toast('Erro: '+err.message,'erro'); }).gerarRelatorioPDF();
+    }
+  </script>
+</body>
+</html>
+
+---
+

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{ --azul:#1D8ECE; --vermelho:#E2231A; --verde:#009E49; --amarelo:#FFF200; --cinza:#C3C3C3; --item-h:40px; }
+    *{box-sizing:border-box;}
+    body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;color:#333;margin:0;padding:20px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+    .caixa-branca{background:#fff;width:100%;max-width:520px;padding:30px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);position:relative;}
+    h1{color:var(--azul);font-size:22px;text-align:center;margin-top:0;text-transform:uppercase;letter-spacing:1px;}
+    .pergunta{font-size:19px;color:#222;margin:0 0 4px;font-weight:bold;}
+    .ajuda{font-size:13px;color:#777;margin:0 0 18px;}
+    input[type=text],input[type=email]{width:100%;padding:15px;border:1px solid #ccc;border-radius:6px;font-size:17px;}
+    input:focus{border-color:var(--azul);outline:none;}
+
+    .stepper{display:flex;background:#eee;height:6px;border-radius:3px;margin-bottom:24px;overflow:hidden;}
+    .stepper-fill{background:var(--azul);height:100%;width:0;transition:width .3s;}
+
+    .qstep{display:none;animation:fade .25s;}
+    .qstep.active{display:block;}
+    @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+    .botoes{display:flex;gap:10px;margin-top:24px;}
+    button{padding:15px;font-size:16px;font-weight:bold;border:none;border-radius:6px;cursor:pointer;width:100%;color:#fff;transition:.15s;}
+    .btn-next{background:var(--azul);}
+    .btn-next:hover{background:#1577ad;}
+    .btn-prev{background:var(--cinza);color:#333;flex:.45;}
+    button:disabled{opacity:.5;cursor:not-allowed;}
+
+    .erro{color:var(--vermelho);font-size:14px;font-weight:bold;display:none;margin-top:12px;padding:10px;background:#fdf2f2;border-left:4px solid var(--vermelho);border-radius:4px;}
+
+    .cards{display:grid;grid-template-columns:1fr;gap:10px;}
+    .cards.duo{grid-template-columns:1fr 1fr;}
+    .opt input{display:none;}
+    .opt-card{border:1px solid #ccc;padding:16px;border-radius:8px;text-align:center;font-size:15px;font-weight:bold;background:#fafafa;cursor:pointer;transition:.15s;}
+    .opt input:checked + .opt-card{border-color:var(--azul);background:#e6f4fb;color:var(--azul);}
+    .opt input:disabled + .opt-card{opacity:.5;cursor:not-allowed;background:#eee;color:#999;}
+    .opt-card small{display:block;font-weight:normal;font-size:12px;margin-top:4px;}
+
+    .wheels{display:flex;gap:8px;justify-content:center;position:relative;margin:8px 0 4px;}
+    .wheel{height:200px;flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;padding:80px 0;text-align:center;-ms-overflow-style:none;scrollbar-width:none;position:relative;z-index:2;}
+    .wheel::-webkit-scrollbar{display:none;}
+    .wheel-item{height:var(--item-h);line-height:var(--item-h);scroll-snap-align:center;font-size:18px;color:#bbb;transition:.1s;}
+    .wheel-item.sel{color:var(--azul);font-weight:bold;font-size:22px;}
+    .wheel-band{position:absolute;top:80px;left:0;right:0;height:var(--item-h);border-top:2px solid var(--azul);border-bottom:2px solid var(--azul);pointer-events:none;z-index:1;background:rgba(29,142,206,.05);}
+    .decadas{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:8px;}
+    .decada{padding:10px 14px;border:1px solid #ccc;border-radius:20px;background:#fafafa;cursor:pointer;font-size:14px;font-weight:bold;}
+    .decada.sel{background:var(--azul);color:#fff;border-color:var(--azul);}
+
+    .rev-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #eee;}
+    .rev-item .rot{color:#888;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+    .rev-item .val{font-weight:bold;color:#222;font-size:14px;}
+    .rev-item .editar{background:none;color:var(--azul);border:1px solid var(--azul);padding:5px 10px;font-size:12px;border-radius:5px;width:auto;flex:0 0 auto;}
+
+    .declara{display:flex;gap:10px;background:#f7f9fb;padding:14px;border-radius:6px;cursor:pointer;margin-bottom:12px;border:1px solid #e3e8ee;}
+    .declara input{width:20px;height:20px;flex:0 0 auto;margin-top:2px;}
+    .declara span{font-size:12.5px;line-height:1.5;color:#444;text-align:justify;}
+
+    .spinner{display:inline-block;width:16px;height:16px;border:3px solid rgba(29,142,206,.25);border-top-color:var(--azul);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .overlay{position:absolute;inset:0;background:rgba(255,255,255,.88);border-radius:8px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:50;}
+    .overlay.show{display:flex;}
+    .overlay .big{width:38px;height:38px;border:4px solid rgba(29,142,206,.2);border-top-color:var(--azul);border-radius:50%;animation:spin .8s linear infinite;}
+    .overlay p{margin-top:14px;color:var(--azul);font-weight:bold;font-size:14px;}
+
+    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-90px);background:#161616;color:#fff;padding:14px 22px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;opacity:0;transition:.3s;z-index:9999;border-left:4px solid var(--verde);max-width:90%;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .toast.erro{border-left-color:var(--vermelho);}
+
+    .sucesso-acoes{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+    .sucesso-acoes a,.sucesso-acoes button{text-decoration:none;text-align:center;padding:14px;border-radius:6px;font-weight:bold;font-size:15px;}
+    .btn-home{background:var(--azul);color:#fff;}
+    .btn-fechar{background:#eee;color:#444;border:1px solid #ddd;}
+  </style>
+</head>
+<body>
+  <div class="caixa-branca">
+    <h1>Nova Inscrição 2027</h1>
+
+    <div id="telaIntro">
+      <div style="background:#FFF7E6;border:1px solid var(--amarelo);border-left:5px solid #C9A227;border-radius:8px;padding:18px;margin-bottom:18px;">
+        <p style="margin:0 0 8px;font-weight:bold;color:#8a6d00;">⚠️ Antes de começar, leia com atenção</p>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#5a4a10;">
+          A inscrição é feita em <strong>uma única sessão, do início ao fim</strong>. Se você fechar ou recarregar esta aba,
+          perder a conexão ou interromper o preenchimento, <strong>os dados não serão salvos</strong> e será necessário recomeçar.
+          Reserve alguns minutos e tenha em mãos seu <strong>CPF</strong> e seu <strong>CEP</strong>.
+        </p>
+      </div>
+      <label class="declara">
+        <input type="checkbox" id="cienteSessao" onchange="document.getElementById('btnIniciar').disabled=!this.checked;">
+        <span>Estou ciente de que devo concluir a inscrição em uma única sessão e que a interrupção implica recomeçar o processo.</span>
+      </label>
+      <button class="btn-next" id="btnIniciar" disabled onclick="iniciarInscricao()">Iniciar inscrição ➔</button>
+      <div style="text-align:center;margin-top:16px;">
+        <a href="<?= ScriptApp.getService().getUrl() ?>" style="color:#888;text-decoration:none;font-size:13px;">⬅ Voltar à tela inicial</a>
+      </div>
+    </div>
+
+    <div id="blocoWizard" style="display:none;">
+      <div class="stepper"><div class="stepper-fill" id="barra"></div></div>
+      <div id="wizard">
+
+        <div class="qstep active" data-step="nome"><p class="pergunta">Qual é o seu primeiro nome?</p><input type="text" id="nome" placeholder="Ex.: Maria"></div>
+        <div class="qstep" data-step="sobrenome"><p class="pergunta">E o seu sobrenome completo?</p><input type="text" id="sobrenome" placeholder="Ex.: da Silva Santos"></div>
+
+        <div class="qstep" data-step="nasc">
+          <p class="pergunta">Qual a sua data de nascimento?</p>
+          <p class="ajuda" id="ajudaNasc">Primeiro escolha a década do seu nascimento.</p>
+          <div class="decadas" id="decadas"></div>
+          <div class="wheels" id="rolos" style="display:none;">
+            <div class="wheel" id="wDia"></div><div class="wheel" id="wMes"></div><div class="wheel" id="wAno"></div>
+            <div class="wheel-band"></div>
+          </div>
+        </div>
+
+        <div class="qstep" data-step="email"><p class="pergunta">Qual o seu e-mail de contato?</p><p class="ajuda">Usaremos para enviar a confirmação e o link de pagamento.</p><input type="email" id="email" placeholder="seunome@email.com"></div>
+        <div class="qstep" data-step="cpf"><p class="pergunta">Qual o seu CPF?</p><input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric"></div>
+        <div class="qstep" data-step="telefone"><p class="pergunta">Qual o seu WhatsApp / celular?</p><input type="text" id="telefone" placeholder="(13) 99999-9999" maxlength="15" inputmode="numeric"></div>
+
+        <div class="qstep" data-step="cep">
+          <p class="pergunta">Qual o CEP da sua residência?</p>
+          <p class="ajuda">O endereço será preenchido automaticamente.</p>
+          <input type="text" id="cep" placeholder="00000-000" maxlength="9" inputmode="numeric">
+          <input type="text" id="endereco" readonly placeholder="Aguardando CEP..." style="background:#f4f4f4;margin-top:10px;">
+        </div>
+
+        <div class="qstep" data-step="numero"><p class="pergunta">Qual o número da residência?</p><input type="text" id="numero" placeholder="Ex.: 250" inputmode="numeric"></div>
+
+        <div class="qstep" data-step="complemento">
+          <p class="pergunta">Complemento</p>
+          <p class="ajuda">Apartamento, bloco, casa dos fundos, etc. Deixe em branco se não houver.</p>
+          <input type="text" id="complemento" placeholder="Ex.: Apto 32, Bloco B">
+        </div>
+
+        <div class="qstep" data-step="escolaridade">
+          <p class="pergunta">Qual a sua escolaridade?</p>
+          <div class="cards">
+            <label class="opt"><input type="radio" name="escolaridade" value="Ensino Fundamental"><div class="opt-card">Ensino Fundamental</div></label>
+            <label class="opt"><input type="radio" name="escolaridade" value="Ensino Médio"><div class="opt-card">Ensino Médio<small>Necessário p/ Técnico</small></div></label>
+            <label class="opt"><input type="radio" name="escolaridade" value="Ensino Superior"><div class="opt-card">Ensino Superior / Outros</div></label>
+          </div>
+        </div>
+
+        <div class="qstep" data-step="curso">
+          <p class="pergunta">Qual modalidade de ensino?</p>
+          <div class="cards duo">
+            <label class="opt"><input type="radio" name="curso" value="Regular"><div class="opt-card">Curso Regular</div></label>
+            <label class="opt"><input type="radio" name="curso" value="Técnico"><div class="opt-card">Curso Técnico</div></label>
+          </div>
+        </div>
+
+        <div class="qstep" data-step="instrumento">
+          <p class="pergunta">Qual instrumento pretendido?</p>
+          <div class="cards duo" id="grid-instrumentos">
+            <div style="grid-column:1/-1;text-align:center;color:#777;"><span class="spinner"></span>Carregando vagas...</div>
+          </div>
+        </div>
+
+        <div class="qstep" data-step="periodo">
+          <p class="pergunta">Qual turno de estudo?</p>
+          <div class="cards">
+            <label class="opt"><input type="radio" name="periodo" value="Manhã" id="optManha"><div class="opt-card">Manhã<small>Apenas menores de 18</small></div></label>
+            <label class="opt"><input type="radio" name="periodo" value="Tarde"><div class="opt-card">Tarde<small>Público misto</small></div></label>
+            <label class="opt"><input type="radio" name="periodo" value="Noite"><div class="opt-card">Noite<small>Adultos e técnicos</small></div></label>
+          </div>
+        </div>
+
+        <div class="qstep" data-step="pagamento">
+          <p class="pergunta">Perfil financeiro</p>
+          <div class="cards">
+            <label class="opt"><input type="radio" name="tipoInscricao" value="TAXA" checked onchange="toggleIsencao(false)"><div class="opt-card">💳 Pagar Taxa Normal (R$ 20,00)</div></label>
+            <label class="opt"><input type="radio" name="tipoInscricao" value="ISENÇÃO" onchange="toggleIsencao(true)"><div class="opt-card">📄 Solicitar Isenção (Programas Sociais)</div></label>
+          </div>
+          <div id="blocoIsencao" style="display:none;background:#f9f9f9;padding:15px;border:1px solid #ccc;border-radius:6px;margin-top:14px;">
+            <p style="margin-top:0;font-weight:bold;font-size:14px;">Anexar comprovante do benefício (PDF):</p>
+            <input type="file" id="arquivoIsencao" accept="application/pdf" style="width:100%;">
+          </div>
+          <div id="blocoPagamento" style="margin-top:14px;">
+            <p class="ajuda" style="margin-bottom:8px;">Método de pagamento:</p>
+            <div class="cards duo">
+              <label class="opt"><input type="radio" name="formaPagamento" value="PIX" checked><div class="opt-card">Pix (Automático)</div></label>
+              <label class="opt"><input type="radio" name="formaPagamento" value="BOLETO"><div class="opt-card">Boleto Bancário</div></label>
+            </div>
+            <p style="font-size:13px;color:var(--vermelho);font-weight:bold;text-align:center;margin-top:10px;">A cobrança é gerada após a confirmação. Você terá 3 horas para pagar.</p>
+          </div>
+        </div>
+
+        <div class="qstep" data-step="revisao">
+          <p class="pergunta">Confira seus dados</p>
+          <p class="ajuda">Revise tudo antes de finalizar. Toque em "Editar" para corrigir qualquer item.</p>
+          <div id="revisaoConteudo"></div>
+        </div>
+
+        <div class="qstep" data-step="termo">
+          <p class="pergunta">Declarações finais</p>
+          <label class="declara">
+            <input type="checkbox" id="termoVeracidade">
+            <span>Declaro, sob as penas da lei e ciente do crime de falsidade ideológica (art. 299 do Código Penal), que todas as informações prestadas nesta inscrição são verdadeiras e de minha inteira responsabilidade, comprometendo-me a apresentar a documentação comprobatória no ato da matrícula.</span>
+          </label>
+          <label class="declara">
+            <input type="checkbox" id="termoLGPD">
+            <span>Autorizo o Conservatório Municipal de Cubatão a coletar, armazenar e tratar meus dados pessoais para os fins exclusivos deste processo seletivo, nos termos da Lei nº 13.709/2018 (LGPD), e autorizo o contato por e-mail, telefone ou WhatsApp para comunicações relativas à inscrição, à seleção e à matrícula. Estou ciente de que os dados não serão compartilhados com terceiros fora dessa finalidade.</span>
+          </label>
+        </div>
+
+      </div>
+
+      <div class="erro" id="erro"></div>
+      <div class="botoes" id="navBotoes">
+        <button class="btn-prev" id="btnPrev" onclick="voltar()" style="display:none;">⬅ Voltar</button>
+        <button class="btn-next" id="btnNext" onclick="avancar()">Avançar ➔</button>
+      </div>
+    </div>
+
+    <div id="telaSucesso" style="display:none;text-align:center;padding:10px;">
+      <h2 id="tituloSucesso" style="color:var(--verde);font-size:24px;"></h2>
+      <p id="subtextoSucesso" style="font-size:16px;line-height:1.5;color:#333;margin-bottom:10px;"></p>
+      <button id="lnkPagamento" style="display:none;background:var(--vermelho);margin-bottom:6px;" onclick="abrirLink()">CLIQUE AQUI PARA ACESSAR A FATURA</button>
+      <div class="sucesso-acoes">
+        <a class="btn-home" href="<?= ScriptApp.getService().getUrl() ?>">🏠 Voltar à tela inicial</a>
+        <button class="btn-fechar" onclick="fecharAba()">Fechar esta aba</button>
+      </div>
+      <p style="font-size:12px;color:#999;margin-top:14px;">Você já pode fechar esta aba com segurança.</p>
+    </div>
+
+    <div class="overlay" id="overlay"><div class="big"></div><p id="overlayTxt">Processando...</p></div>
+  </div>
+
+  <script>
+    const ITEM_H = 40;
+    const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    let idadeCandidato = 0, urlPagamentoGlobal = '', arquivoBase64Global = '', arquivoNomeGlobal = '';
+    let decadaSel = null, atual = 0, emInscricao = false, finalizado = false, retornoRevisao = false;
+    let steps = [];
+
+    function toast(msg, tipo){
+      let t=document.getElementById('toast');
+      if(!t){ t=document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
+      t.className='toast '+(tipo||''); t.innerText=msg;
+      requestAnimationFrame(()=>t.classList.add('show'));
+      clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),3500);
+    }
+    function overlay(on, txt){ const o=document.getElementById('overlay'); if(txt) document.getElementById('overlayTxt').innerText=txt; o.classList.toggle('show',!!on); }
+
+    function iniciarInscricao(){
+      document.getElementById('telaIntro').style.display='none';
+      document.getElementById('blocoWizard').style.display='block';
+      emInscricao=true; steps=[...document.querySelectorAll('.qstep')]; go(0);
+    }
+    function stepIndex(nome){ return steps.findIndex(s=>s.dataset.step===nome); }
+
+    function mostrarErro(msg){ const e=document.getElementById('erro'); e.innerText=msg; e.style.display='block'; }
+    function limparErro(){ document.getElementById('erro').style.display='none'; }
+
+    function go(i){
+      steps[atual].classList.remove('active');
+      atual=i; steps[atual].classList.add('active');
+      document.getElementById('barra').style.width=((atual+1)/steps.length*100)+'%';
+      document.getElementById('btnPrev').style.display=atual===0?'none':'block';
+      const last=atual===steps.length-1;
+      const nb=document.getElementById('btnNext');
+      nb.innerText=last?'Confirmar e Enviar ✔':'Avançar ➔';
+      nb.style.background=last?'var(--verde)':'var(--azul)';
+      limparErro();
+      const inp=steps[atual].querySelector('input[type=text],input[type=email]');
+      if(inp) setTimeout(()=>inp.focus(),60);
+      const step=steps[atual].dataset.step;
+      if(step==='periodo') aplicarRegraTurno();
+      if(step==='revisao') renderRevisao();
+    }
+    function voltar(){ if(atual>0) go(atual-1); }
+
+    function avancar(){
+      if(!validar(steps[atual].dataset.step)) return;
+      if(retornoRevisao && steps[atual].dataset.step!=='revisao'){ retornoRevisao=false; go(stepIndex('revisao')); return; }
+      if(atual===steps.length-1){ finalizar(); return; }
+      go(atual+1);
+    }
+
+    document.addEventListener('keydown', e=>{
+      if(e.key==='Enter' && emInscricao && !finalizado && steps[atual] && steps[atual].querySelector('input[type=text],input[type=email]')){ e.preventDefault(); avancar(); }
+    });
+
+    function validar(step){
+      const val=id=>(document.getElementById(id)?.value||'').trim();
+      const radio=name=>document.querySelector('input[name="'+name+'"]:checked');
+      switch(step){
+        case 'nome': if(!val('nome')) return mostrarErro('Informe seu primeiro nome.'),false; break;
+        case 'sobrenome': if(!val('sobrenome')) return mostrarErro('Informe seu sobrenome.'),false; break;
+        case 'nasc': if(!decadaSel) return mostrarErro('Escolha a década de nascimento.'),false; calcularIdade(); break;
+        case 'email': if(!/^\S+@\S+\.\S+$/.test(val('email'))) return mostrarErro('Informe um e-mail válido.'),false; break;
+        case 'cpf': if(val('cpf').replace(/\D/g,'').length!==11) return mostrarErro('Digite os 11 números do CPF.'),false; break;
+        case 'telefone': if(val('telefone').replace(/\D/g,'').length<10) return mostrarErro('Digite um telefone válido com DDD.'),false; break;
+        case 'cep':
+          if(val('cep').replace(/\D/g,'').length!==8) return mostrarErro('Digite os 8 números do CEP.'),false;
+          if(!val('endereco')) return mostrarErro('Aguarde a busca do endereço ou preencha manualmente.'),false; break;
+        case 'numero': if(!val('numero')) return mostrarErro('Informe o número da residência.'),false; break;
+        case 'complemento': break;
+        case 'escolaridade': if(!radio('escolaridade')) return mostrarErro('Selecione sua escolaridade.'),false; break;
+        case 'curso':
+          if(!radio('curso')) return mostrarErro('Selecione a modalidade.'),false;
+          if(radio('curso').value==='Técnico'){
+            if(idadeCandidato<14) return mostrarErro('Cursos técnicos exigem idade mínima de 14 anos.'),false;
+            if(radio('escolaridade').value==='Ensino Fundamental') return mostrarErro('O Curso Técnico requer Ensino Médio (cursando ou concluído).'),false;
+          } break;
+        case 'instrumento':
+          if(!radio('instrumento')) return mostrarErro('Selecione um instrumento.'),false;
+          { const i=radio('instrumento').value;
+            if(i==='Piano'&&idadeCandidato<7) return mostrarErro('A idade mínima para Piano é de 7 anos.'),false;
+            if(['Violão','Cello','Contrabaixo Acústico','Contrabaixo'].includes(i)&&idadeCandidato<12) return mostrarErro('A idade mínima para '+i+' é de 12 anos.'),false;
+          } break;
+        case 'periodo': if(!radio('periodo')) return mostrarErro('Selecione um turno.'),false; break;
+        case 'pagamento': if(radio('tipoInscricao').value==='ISENÇÃO' && !arquivoBase64Global) return mostrarErro('Anexe o PDF do comprovante de benefício.'),false; break;
+        case 'revisao': break;
+        case 'termo':
+          if(!document.getElementById('termoVeracidade').checked) return mostrarErro('Confirme a declaração de veracidade.'),false;
+          if(!document.getElementById('termoLGPD').checked) return mostrarErro('Confirme a autorização de uso de dados (LGPD).'),false; break;
+      }
+      return true;
+    }
+
+    function calcularIdade(){
+      const d=+document.getElementById('wDia').dataset.sel, m=+document.getElementById('wMes').dataset.sel, a=+document.getElementById('wAno').dataset.sel;
+      const nasc=new Date(a,m-1,d), hoje=new Date();
+      idadeCandidato=hoje.getFullYear()-nasc.getFullYear();
+      if(hoje.getMonth()<nasc.getMonth()||(hoje.getMonth()===nasc.getMonth()&&hoje.getDate()<nasc.getDate())) idadeCandidato--;
+    }
+    function aplicarRegraTurno(){
+      const om=document.getElementById('optManha');
+      if(idadeCandidato>=18){ om.disabled=true; if(om.checked) om.checked=false; } else om.disabled=false;
+    }
+
+    function buildWheel(el,items,initialIdx){
+      el.innerHTML=items.map(it=>'<div class="wheel-item" data-val="'+it.val+'">'+it.label+'</div>').join('');
+      el.dataset.sel=items[initialIdx].val;
+      let t;
+      el.addEventListener('scroll',()=>{ clearTimeout(t); t=setTimeout(()=>{
+        const idx=Math.max(0,Math.min(items.length-1,Math.round(el.scrollTop/ITEM_H)));
+        el.dataset.sel=items[idx].val;
+        [...el.children].forEach((c,i)=>c.classList.toggle('sel',i===idx));
+      },70); });
+      setTimeout(()=>{ el.scrollTop=initialIdx*ITEM_H; el.children[initialIdx].classList.add('sel'); },30);
+    }
+    function montarRoletaData(decada){
+      document.getElementById('rolos').style.display='flex';
+      document.getElementById('ajudaNasc').innerText='Role cada coluna até a data correta.';
+      const dias=Array.from({length:31},(_,i)=>({val:i+1,label:i+1}));
+      const meses=MESES.map((m,i)=>({val:i+1,label:m}));
+      const anoMax=new Date().getFullYear(), anos=[];
+      for(let y=decada;y<=Math.min(decada+9,anoMax);y++) anos.push({val:y,label:y});
+      buildWheel(document.getElementById('wDia'),dias,0);
+      buildWheel(document.getElementById('wMes'),meses,0);
+      buildWheel(document.getElementById('wAno'),anos,Math.floor(anos.length/2));
+    }
+
+    function renderizarVagas(vagas){
+      const grid=document.getElementById('grid-instrumentos'); grid.innerHTML='';
+      vagas.forEach(item=>{
+        const esg=item.vagasRestantes<=0;
+        grid.innerHTML+='<label class="opt"><input type="radio" name="instrumento" value="'+item.instrumento+'" '+(esg?'disabled':'')+'>'
+          +'<div class="opt-card">'+item.instrumento+'<small style="'+(esg?'color:var(--vermelho)':'color:var(--verde)')+'">'+(esg?'Lista de espera':item.vagasRestantes+' vagas')+'</small></div></label>';
+      });
+    }
+
+    function toggleIsencao(isIsencao){
+      document.getElementById('blocoIsencao').style.display=isIsencao?'block':'none';
+      document.getElementById('blocoPagamento').style.display=isIsencao?'none':'block';
+    }
+
+    function dataNascStr(){
+      const a=document.getElementById('wAno').dataset.sel;
+      const m=String(document.getElementById('wMes').dataset.sel).padStart(2,'0');
+      const d=String(document.getElementById('wDia').dataset.sel).padStart(2,'0');
+      return {iso:a+'-'+m+'-'+d, br:d+'/'+m+'/'+a};
+    }
+    function enderecoCompleto(){
+      const comp=(document.getElementById('complemento').value||'').trim();
+      return document.getElementById('endereco').value+', Nº '+document.getElementById('numero').value+(comp?' - '+comp:'');
+    }
+    function renderRevisao(){
+      const v=id=>document.getElementById(id).value||'—';
+      const r=n=>{ const x=document.querySelector('input[name="'+n+'"]:checked'); return x?x.value:'—'; };
+      const tipo=r('tipoInscricao');
+      const itens=[
+        ['Nome', v('nome')+' '+v('sobrenome'), 'nome'],
+        ['Nascimento', dataNascStr().br, 'nasc'],
+        ['E-mail', v('email'), 'email'],
+        ['CPF', v('cpf'), 'cpf'],
+        ['Telefone', v('telefone'), 'telefone'],
+        ['Endereço', enderecoCompleto(), 'cep'],
+        ['Escolaridade', r('escolaridade'), 'escolaridade'],
+        ['Modalidade', r('curso'), 'curso'],
+        ['Instrumento', r('instrumento'), 'instrumento'],
+        ['Turno', r('periodo'), 'periodo'],
+        ['Pagamento', tipo==='ISENÇÃO'?'Isenção (PDF anexado)':('Taxa R$ 20,00 · '+r('formaPagamento')), 'pagamento']
+      ];
+      document.getElementById('revisaoConteudo').innerHTML=itens.map(function(it){
+        return '<div class="rev-item"><div style="text-align:left;"><div class="rot">'+it[0]+'</div><div class="val">'+it[1]+'</div></div>'
+          +'<button class="editar" onclick="editar(\''+it[2]+'\')">Editar</button></div>';
+      }).join('');
+    }
+    function editar(step){ retornoRevisao=true; go(stepIndex(step)); }
+
+    function finalizar(){
+      overlay(true,'Registrando sua inscrição...');
+      const tipo=document.querySelector('input[name="tipoInscricao"]:checked').value;
+      const dados={
+        nome:document.getElementById('nome').value, sobrenome:document.getElementById('sobrenome').value,
+        email:document.getElementById('email').value, cpf:document.getElementById('cpf').value,
+        telefone:document.getElementById('telefone').value, dataNascimento:dataNascStr().iso,
+        endereco:enderecoCompleto(), escolaridade:document.querySelector('input[name="escolaridade"]:checked').value,
+        curso:document.querySelector('input[name="curso"]:checked').value,
+        instrumento:document.querySelector('input[name="instrumento"]:checked').value,
+        periodo:document.querySelector('input[name="periodo"]:checked').value,
+        tipoInscricao:tipo, formaPagamento:document.querySelector('input[name="formaPagamento"]:checked')?.value||'PIX',
+        arquivoBase64:arquivoBase64Global, arquivoNome:arquivoNomeGlobal
+      };
+      google.script.run
+        .withSuccessHandler(function(resp){
+          overlay(false);
+          if(resp.sucesso){
+            finalizado=true; emInscricao=false;
+            document.getElementById('blocoWizard').style.display='none';
+            document.getElementById('telaSucesso').style.display='block';
+            if(resp.isento){
+              document.getElementById('tituloSucesso').innerText='📄 Solicitação de Isenção Recebida!';
+              document.getElementById('subtextoSucesso').innerText='Seu PDF foi recebido. A vaga está pré-reservada aguardando a auditoria do documento.';
+            }else{
+              document.getElementById('tituloSucesso').innerText='✔ Inscrição Registrada!';
+              urlPagamentoGlobal=resp.pagamentoUrl;
+              document.getElementById('subtextoSucesso').innerHTML='Vaga pré-reservada! Clique abaixo para acessar a fatura.<br><b>Seu prazo de 3 horas começa agora.</b>';
+              document.getElementById('lnkPagamento').style.display='block';
+            }
+          }else{ mostrarErro(resp.erro); toast(resp.erro,'erro'); }
+        })
+        .withFailureHandler(function(){ overlay(false); toast('Falha de comunicação com o servidor.','erro'); mostrarErro('Falha de comunicação com o servidor.'); })
+        .processarInscricao(dados);
+    }
+    function abrirLink(){ if(urlPagamentoGlobal) window.open(urlPagamentoGlobal,'_blank'); }
+    function fecharAba(){ try{ window.open('','_self'); window.top.close(); }catch(e){} setTimeout(()=>toast('Se a aba não fechar, feche-a manualmente.'),300); }
+
+    window.addEventListener('beforeunload', function(e){ if(emInscricao && !finalizado){ e.preventDefault(); e.returnValue=''; } });
+
+    window.onload=function(){
+      const anoAtual=new Date().getFullYear();
+      const decBox=document.getElementById('decadas');
+      for(let dec=Math.floor(anoAtual/10)*10; dec>=1930; dec-=10){
+        const b=document.createElement('div'); b.className='decada'; b.innerText=dec+'s'; b.dataset.dec=dec;
+        b.onclick=()=>{ decadaSel=dec; [...decBox.children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); montarRoletaData(dec); limparErro(); };
+        decBox.appendChild(b);
+      }
+      document.getElementById('cpf').addEventListener('input',e=>{
+        let v=e.target.value.replace(/\D/g,'').slice(0,11);
+        if(v.length>9) v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2}).*/,'$1.$2.$3-$4');
+        else if(v.length>6) v=v.replace(/^(\d{3})(\d{3})(\d{1,3}).*/,'$1.$2.$3');
+        else if(v.length>3) v=v.replace(/^(\d{3})(\d{1,3}).*/,'$1.$2');
+        e.target.value=v;
+      });
+      document.getElementById('telefone').addEventListener('input',e=>{
+        let v=e.target.value.replace(/\D/g,'').slice(0,11);
+        if(v.length<=2) v=v.replace(/^(\d*)/,'($1');
+        else if(v.length<=6) v=v.replace(/^(\d{2})(\d+)/,'($1) $2');
+        else if(v.length<=10) v=v.replace(/^(\d{2})(\d{4})(\d+)/,'($1) $2-$3');
+        else v=v.replace(/^(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');
+        e.target.value=v;
+      });
+      document.getElementById('cep').addEventListener('input',e=>{
+        let v=e.target.value.replace(/\D/g,'').slice(0,8);
+        e.target.value=v.length>5?v.replace(/^(\d{5})(\d{1,3})/,'$1-$2'):v;
+        const end=document.getElementById('endereco');
+        if(v.length===8){
+          end.value='Buscando logradouro...';
+          fetch('https://viacep.com.br/ws/'+v+'/json/').then(r=>r.json()).then(data=>{
+            if(!data.erro){ end.setAttribute('readonly','readonly'); end.style.background='#f4f4f4'; end.value=data.logradouro+', '+data.bairro+', '+data.localidade+' - '+data.uf; }
+            else{ end.value=''; end.removeAttribute('readonly'); end.style.background='#fff'; end.placeholder='CEP não encontrado. Digite Rua, Bairro, Cidade - UF.'; }
+          }).catch(()=>{ end.value=''; end.removeAttribute('readonly'); end.style.background='#fff'; end.placeholder='Falha na busca. Digite o endereço manualmente.'; });
+        }
+      });
+      document.getElementById('arquivoIsencao').addEventListener('change',e=>{
+        const f=e.target.files[0]; if(!f) return;
+        if(f.type!=='application/pdf'){ toast('Apenas arquivos PDF são aceitos.','erro'); e.target.value=''; return; }
+        const r=new FileReader(); r.onload=ev=>{ arquivoBase64Global=ev.target.result; arquivoNomeGlobal=f.name; toast('Comprovante anexado.'); }; r.readAsDataURL(f);
+      });
+      google.script.run.withSuccessHandler(renderizarVagas).obterVagasFormulario();
+    };
+  </script>
+</body>
+</html>
+
+---
+
