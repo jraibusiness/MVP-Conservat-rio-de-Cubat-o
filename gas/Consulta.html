@@ -118,6 +118,13 @@
     });
     function toggleDetalhes(el){ el.classList.toggle('open'); }
 
+    // Converte "dd/mm/yyyy hh:mm" (formato vindo do backend) em Date local
+    function parseDataBR(str){
+      const m = String(str).match(/(\d{2})\/(\d{2})\/(\d{4})[ ,]+(\d{2}):(\d{2})/);
+      if(!m) return new Date(str);
+      return new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
+    }
+
     function consultar(){
       const btn=document.getElementById('btn'), saida=document.getElementById('saida');
       btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Consultando...'; saida.innerHTML='';
@@ -127,9 +134,10 @@
           if(!resp.encontrado){ saida.innerHTML='<p class="msg-erro">'+resp.message+'</p>'; return; }
           saida.innerHTML=resp.resultados.map(function(r){
             let cls='pendente',cor='var(--vermelho)',texto='',msgExp='';
+            const venceu = r.dataExpiracao && parseDataBR(r.dataExpiracao) < new Date();
             if(r.statusVaga==='APROVADO'){ cls='aprovado'; cor='var(--verde-escuro)'; texto='✅ Aprovado — '+r.posicao+'º lugar'; }
             else if(r.statusVaga==='LISTA DE ESPERA'){ cls='espera'; cor='#9a7400'; texto='📋 Lista de espera — pos. '+r.posicao; }
-            else if(r.status==='EXPIRADO'){ cls='expirado'; cor='#6b7785'; texto='❌ Expirado'; msgExp='<p style="color:var(--vermelho)">Prazo encerrado em: '+r.dataExpiracao+'</p>'; }
+            else if(r.status==='EXPIRADO' || venceu){ cls='expirado'; cor='#6b7785'; texto='❌ Pagamento Vencido'; msgExp='<p style="color:var(--vermelho)">Prazo encerrado em: '+r.dataExpiracao+'. Sua vaga não foi mais reservada — caso ainda tenha interesse, será necessário realizar uma nova inscrição.</p>'; }
             else{ cls='pendente'; cor='var(--vermelho)'; texto='⏳ Aguardando Pagamento'; msgExp='<p style="color:#b9790a">Atenção: expira em '+r.dataExpiracao+'</p>'; }
             return '<div class="resultado '+cls+'" onclick="toggleDetalhes(this)">'
               +'<div class="resultado-header"><h3>'+r.instrumento+'</h3><span class="status" style="color:'+cor+'">'+texto+' <span class="seta-toggle">▾</span></span></div>'

@@ -88,6 +88,18 @@
     .secao{display:none;} .secao.active{display:block;animation:fade .3s var(--easing);}
     @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
     .secao-back{margin-bottom:14px;}
+    .add-vaga{display:flex;gap:10px;align-items:center;margin:6px 0 4px;}
+    .add-vaga input{margin:0;}
+    .add-vaga input#novo-curso{flex:1;}
+    .add-vaga input#novas-vagas{width:90px;flex:0 0 auto;}
+    .btn-add{display:flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto;padding:12px 18px;}
+    .btn-add span{font-size:18px;line-height:1;font-weight:800;}
+    @media (max-width:480px){
+      .add-vaga{flex-wrap:wrap;}
+      .add-vaga input#novo-curso{flex:1 1 100%;}
+      .add-vaga input#novas-vagas{flex:1;width:auto;}
+      .btn-add{flex:1;justify-content:center;}
+    }
     .lim-input{width:80px;padding:7px;margin:0;}
     .qr-box{text-align:center;background:#fff;border:1px solid #eef1f4;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--sombra);}
     .qr-box img{width:200px;height:200px;background:#fff;border-radius:12px;}
@@ -196,10 +208,10 @@
             <tbody id="corpo-stats"><tr><td colspan="6"><span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Processando dados...</td></tr></tbody>
           </table>
 
-          <div class="add-vaga" style="display:flex;gap:10px;margin:6px 0 4px;">
+          <div class="add-vaga">
             <input type="text" id="novo-curso" placeholder="Novo instrumento (ex: Saxofone)">
-            <input type="number" id="novas-vagas" placeholder="Vagas" style="width:110px;">
-            <button onclick="adicionarCurso()" style="margin-top:10px;height:45px;">+ Adicionar</button>
+            <input type="number" id="novas-vagas" placeholder="Vagas">
+            <button class="btn-add" onclick="adicionarCurso()"><span>+</span> Adicionar</button>
           </div>
 
           <div class="acoes-export" style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
@@ -250,7 +262,7 @@
     </div>
   </div>
 
-  <div class="menu-voltar"><a href="<?= ScriptApp.getService().getUrl() ?>">⬅ Voltar à tela inicial</a></div>
+  <div class="menu-voltar"><a href="<?= ScriptApp.getService().getUrl() ?>" onclick="return confirmarSaida(event)">⬅ Voltar à tela inicial</a></div>
 
   <script>
     let emailAdmin='', configuracoesVagas=[], ultimoBreakdown={}, ultimoDashboard={}, ehDiretor=false, qrCarregado=false;
@@ -321,6 +333,13 @@
       if(nome==='stats') carimboData();
       if(nome==='qr' && !qrCarregado) carregarQR();
     }
+    function confirmarSaida(e){
+      if(document.getElementById('step-painel').classList.contains('active')){
+        if(!confirm('Tem certeza que deseja sair do painel administrativo?')){ e.preventDefault(); return false; }
+      }
+      return true;
+    }
+
     function voltarMenu(){
       document.querySelectorAll('.secao').forEach(s=>s.classList.remove('active'));
       document.getElementById('admin-menu').style.display='grid';
