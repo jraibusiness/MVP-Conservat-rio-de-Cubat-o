@@ -1,40 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root{ --bg:#0C0C0C; --surface:#161616; --surface-hover:#222; --text:#f4f4f4; --text-dim:#9EA3A8;
-           --azul:#1D8ECE; --vermelho:#E2231A; --verde:#009E49; --amarelo:#FFF200; }
+    :root{
+      --azul:#1D8ECE; --azul-escuro:#0F5E91;
+      --vermelho:#E2231A;
+      --verde:#009E49; --verde-escuro:#00763a;
+      --amarelo:#FFD400;
+      --cinza:#9AA3AC; --carvao:#1F2933;
+      --bg:#EEF2F6; --surface:#FFFFFF;
+      --radius:16px;
+      --sombra: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+      --sombra-hover: 0 4px 10px rgba(15,23,42,.06), 0 16px 36px rgba(15,23,42,.12);
+      --easing: cubic-bezier(.22,1,.36,1);
+    }
     *{box-sizing:border-box;}
-    body{font-family:'Inter',Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;}
-    .card{background:var(--surface);border-radius:8px;padding:32px;max-width:420px;width:100%;}
-    h1{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;margin-top:0;color:var(--azul);}
-    input{width:100%;padding:12px;font-size:1rem;border-radius:4px;border:1px solid #333;background:#0C0C0C;color:#fff;margin-bottom:12px;}
-    button{width:100%;padding:12px;font-size:1rem;border:none;border-radius:4px;background:var(--vermelho);color:#fff;font-weight:bold;cursor:pointer;}
-    button:disabled{opacity:.6;}
+    body{
+      font-family:'Inter',Arial,Helvetica,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(29,142,206,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, #E4EAF1 100%);
+      color:var(--carvao);margin:0;min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;
+      animation:fadeIn .6s var(--easing);
+    }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+    .card{
+      background:var(--surface);border:1px solid rgba(15,23,42,.06);border-radius:var(--radius);
+      padding:32px;max-width:440px;width:100%;box-shadow:var(--sombra);
+      animation:popIn .5s var(--easing) .05s both;
+    }
+    @keyframes popIn{ from{opacity:0; transform:scale(.96);} to{opacity:1; transform:scale(1);} }
+
+    h1{font-size:1.3rem;margin:0 0 4px;color:var(--azul-escuro);font-weight:800;}
+    .subt{color:#667;font-size:.85rem;margin:0 0 18px;line-height:1.45;}
+
+    .campo{position:relative;margin-bottom:14px;}
+    input{
+      width:100%;padding:14px 14px;font-size:1rem;border-radius:10px;
+      border:1px solid #d9e1ea;background:#fbfcfe;color:var(--carvao);
+      transition:border-color .2s var(--easing), box-shadow .2s var(--easing);
+    }
+    input:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(29,142,206,.15);}
+
+    button{
+      width:100%;padding:14px;font-size:1rem;border:none;border-radius:10px;
+      background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);
+      color:#fff;font-weight:700;cursor:pointer;letter-spacing:.3px;
+      transition:transform .2s var(--easing), box-shadow .2s var(--easing), opacity .2s;
+      box-shadow:0 6px 16px rgba(29,142,206,.25);
+    }
+    button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(29,142,206,.32);}
+    button:active{transform:translateY(0) scale(.99);}
+    button:disabled{opacity:.65;cursor:default;transform:none;}
+
     .spinner{display:inline-block;width:15px;height:15px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
     @keyframes spin{to{transform:rotate(360deg);}}
-    .resultado{margin-top:15px;padding:16px;border-radius:6px;cursor:pointer;transition:background .2s;border-left:4px solid transparent;}
-    .resultado:hover{background:var(--surface-hover);}
-    .aprovado{background:#10261a;border-left-color:var(--verde);}
-    .espera{background:#332e10;border-left-color:var(--amarelo);}
-    .pendente{background:#2a1414;border-left-color:var(--vermelho);}
-    .expirado{background:#222;border-left-color:#555;opacity:.7;}
-    .resultado-header{display:flex;justify-content:space-between;align-items:center;}
-    .resultado-header h3{margin:0;font-size:1rem;}
-    .resultado-detalhes{display:none;margin-top:15px;padding-top:15px;border-top:1px solid #333;font-size:.85rem;color:var(--text-dim);line-height:1.5;}
-    .resultado.open .resultado-detalhes{display:block;}
-    .msg-erro{color:var(--vermelho);font-size:.9rem;}
-    .menu-voltar{margin-top:25px;font-size:14px;}
-    .menu-voltar a{color:var(--text-dim);text-decoration:none;}
+
+    .resultado{
+      margin-top:14px;padding:16px 18px;border-radius:12px;cursor:pointer;
+      border:1px solid rgba(15,23,42,.06);border-left:4px solid var(--cinza);
+      transition:transform .2s var(--easing), box-shadow .2s var(--easing), background .2s var(--easing);
+      opacity:0;transform:translateY(10px);animation:slideUp .4s var(--easing) forwards;
+    }
+    .resultado:nth-of-type(1){animation-delay:.05s;}
+    .resultado:nth-of-type(2){animation-delay:.12s;}
+    .resultado:nth-of-type(3){animation-delay:.19s;}
+    @keyframes slideUp{ to{opacity:1; transform:translateY(0);} }
+    .resultado:hover{box-shadow:var(--sombra-hover);transform:translateY(-1px);}
+
+    .aprovado{background:#EAFBF1;border-left-color:var(--verde);}
+    .espera{background:#FFF8E6;border-left-color:var(--amarelo);}
+    .pendente{background:#FDECEB;border-left-color:var(--vermelho);}
+    .expirado{background:#F1F3F5;border-left-color:#aab2bb;opacity:.75;}
+
+    .resultado-header{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .resultado-header h3{margin:0;font-size:1rem;color:var(--carvao);}
+    .resultado-header .status{font-size:.8rem;font-weight:700;white-space:nowrap;}
+    .seta-toggle{transition:transform .25s var(--easing);display:inline-block;color:var(--cinza);}
+    .resultado.open .seta-toggle{transform:rotate(180deg);}
+
+    .resultado-detalhes{
+      max-height:0;overflow:hidden;font-size:.85rem;color:#5b6b7a;line-height:1.6;
+      transition:max-height .3s var(--easing), margin-top .3s var(--easing), padding-top .3s var(--easing);
+    }
+    .resultado.open .resultado-detalhes{max-height:200px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(15,23,42,.08);}
+
+    .msg-erro{color:var(--vermelho);font-size:.9rem;background:#FDECEB;border-radius:10px;padding:12px 14px;margin-top:14px;}
+
+    .menu-voltar{margin-top:24px;font-size:14px;text-align:center;}
+    .menu-voltar a{color:#5b6b7a;text-decoration:none;font-weight:600;transition:color .2s;}
+    .menu-voltar a:hover{color:var(--azul);}
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Consultar Inscrição</h1>
-    <p style="color:var(--text-dim);font-size:.85rem;">Digite seu CPF para consultar. Clique no resultado para ver mais detalhes.</p>
-    <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+    <p class="subt">Digite seu CPF para consultar. Clique no resultado para ver mais detalhes.</p>
+    <div class="campo">
+      <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+    </div>
     <button id="btn" onclick="consultar()">Consultar</button>
     <div id="saida"></div>
   </div>
@@ -58,15 +126,15 @@
           btn.disabled=false; btn.textContent='Consultar';
           if(!resp.encontrado){ saida.innerHTML='<p class="msg-erro">'+resp.message+'</p>'; return; }
           saida.innerHTML=resp.resultados.map(function(r){
-            let cls='pendente',texto='',msgExp='';
-            if(r.statusVaga==='APROVADO'){ cls='aprovado'; texto='✅ Aprovado — '+r.posicao+'º lugar'; }
-            else if(r.statusVaga==='LISTA DE ESPERA'){ cls='espera'; texto='📋 Lista de espera — pos. '+r.posicao; }
-            else if(r.status==='EXPIRADO'){ cls='expirado'; texto='❌ Expirado'; msgExp='<p style="color:#ff6b6b">Prazo encerrado em: '+r.dataExpiracao+'</p>'; }
-            else{ cls='pendente'; texto='⏳ Aguardando Pagamento'; msgExp='<p style="color:#f39c12">Atenção: expira em '+r.dataExpiracao+'</p>'; }
+            let cls='pendente',cor='var(--vermelho)',texto='',msgExp='';
+            if(r.statusVaga==='APROVADO'){ cls='aprovado'; cor='var(--verde-escuro)'; texto='✅ Aprovado — '+r.posicao+'º lugar'; }
+            else if(r.statusVaga==='LISTA DE ESPERA'){ cls='espera'; cor='#9a7400'; texto='📋 Lista de espera — pos. '+r.posicao; }
+            else if(r.status==='EXPIRADO'){ cls='expirado'; cor='#6b7785'; texto='❌ Expirado'; msgExp='<p style="color:var(--vermelho)">Prazo encerrado em: '+r.dataExpiracao+'</p>'; }
+            else{ cls='pendente'; cor='var(--vermelho)'; texto='⏳ Aguardando Pagamento'; msgExp='<p style="color:#b9790a">Atenção: expira em '+r.dataExpiracao+'</p>'; }
             return '<div class="resultado '+cls+'" onclick="toggleDetalhes(this)">'
-              +'<div class="resultado-header"><h3>'+r.instrumento+'</h3><span style="font-size:.8rem;">'+texto+' ▾</span></div>'
+              +'<div class="resultado-header"><h3>'+r.instrumento+'</h3><span class="status" style="color:'+cor+'">'+texto+' <span class="seta-toggle">▾</span></span></div>'
               +'<div class="resultado-detalhes"><p>Inscrição gerada em: '+r.dataInscricao+'</p>'+msgExp
-              +'<p style="margin-top:8px;font-size:.75rem;">ID de segurança validado.</p></div></div>';
+              +'<p style="margin-top:8px;font-size:.75rem;color:var(--cinza);">ID de segurança validado.</p></div></div>';
           }).join('');
         })
         .withFailureHandler(function(err){ btn.disabled=false; btn.textContent='Consultar'; saida.innerHTML='<p class="msg-erro">Erro: '+err.message+'</p>'; })
@@ -75,9 +143,3 @@
   </script>
 </body>
 </html>
-
----
-
-
-
-
