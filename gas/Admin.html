@@ -43,6 +43,13 @@
     .btn-sec:hover{background:#eef6fb;border-color:var(--azul);box-shadow:none;}
     .step{display:none;} .active{display:block;}
     table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px;}
+    .tabela-scroll{
+      overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;
+      box-shadow:var(--sombra);
+      -webkit-mask-image:linear-gradient(to right, transparent 0, #000 0, #000 calc(100% - 24px), transparent 100%);
+      mask-image:linear-gradient(to right, transparent 0, #000 0, #000 calc(100% - 24px), transparent 100%);
+    }
+    .tabela-scroll table{margin:0;min-width:560px;}
     th,td{padding:10px;border:1px solid #e9edf2;text-align:left;}
     th{background:#eef2f6;color:#445;}
     .painel-secao{border:1px solid #eef1f4;padding:20px;border-radius:var(--radius);margin-bottom:18px;background:#fafcfe;text-align:left;}
@@ -112,6 +119,8 @@
       #step-email,#step-codigo,#admin-menu,#sec-consulta,#sec-config,#sec-qr,
       .menu-voltar,.secao-back,.acoes-export,.add-vaga,.btn-salvar,.col-acao{display:none!important;}
       #sec-stats{display:block!important;}
+      .tabela-scroll{overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important;box-shadow:none!important;}
+      .tabela-scroll table{min-width:0!important;}
       .print-cabecalho{display:block;text-align:center;margin-bottom:18px;border-bottom:2px solid var(--azul);padding-bottom:12px;}
       .print-cabecalho h2{margin:0;color:var(--azul);}
       .print-cabecalho p{margin:4px 0 0;color:#444;font-size:13px;}
@@ -196,17 +205,19 @@
           <label><b>Preenchimento Geral de Vagas:</b></label>
           <div class="barra-progresso-bg"><div id="barra-fill" class="barra-progresso-fill"></div></div>
 
-          <table style="margin-top:18px;">
-            <thead><tr>
-              <th>Instrumento</th>
-              <th style="text-align:center;background:#f0f4f8;">Total</th>
-              <th style="text-align:center;background:#eafaf1;color:green;">Pagas</th>
-              <th style="text-align:center;background:#fffde6;color:#b38f00;">Pendentes</th>
-              <th style="text-align:center;">Limite de Vagas</th>
-              <th class="col-acao" style="text-align:center;">Ação</th>
-            </tr></thead>
-            <tbody id="corpo-stats"><tr><td colspan="6"><span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Processando dados...</td></tr></tbody>
-          </table>
+          <div class="tabela-scroll">
+            <table style="margin-top:18px;">
+              <thead><tr>
+                <th>Instrumento</th>
+                <th style="text-align:center;background:#f0f4f8;">Total</th>
+                <th style="text-align:center;background:#eafaf1;color:green;">Pagas</th>
+                <th style="text-align:center;background:#fffde6;color:#b38f00;">Pendentes</th>
+                <th style="text-align:center;">Limite de Vagas</th>
+                <th class="col-acao" style="text-align:center;">Ação</th>
+              </tr></thead>
+              <tbody id="corpo-stats"><tr><td colspan="6"><span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Processando dados...</td></tr></tbody>
+            </table>
+          </div>
 
           <div class="add-vaga">
             <input type="text" id="novo-curso" placeholder="Novo instrumento (ex: Saxofone)">
