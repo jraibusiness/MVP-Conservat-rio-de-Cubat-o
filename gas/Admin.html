@@ -59,6 +59,11 @@
     .dash-card:hover{transform:translateY(-2px);box-shadow:var(--sombra-hover);}
     .dash-card h4{margin:0;font-size:12px;color:#8a97a3;text-transform:uppercase;letter-spacing:.4px;}
     .dash-card .valor{font-size:24px;font-weight:800;color:var(--carvao);margin-top:6px;}
+    @media (max-width:600px){
+      .dash-container{grid-template-columns:repeat(2,1fr);gap:10px;}
+      .dash-card{padding:12px;}
+      .dash-card .valor{font-size:20px;}
+    }
     .barra-progresso-bg{background:#e9edf2;border-radius:10px;height:12px;width:100%;overflow:hidden;margin-top:5px;}
     .barra-progresso-fill{background:linear-gradient(90deg,var(--verde),var(--verde-escuro));height:100%;width:0%;transition:width 1s var(--easing);}
     .menu-voltar{text-align:center;margin-top:20px;font-size:14px;}
