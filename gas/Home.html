@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <? var aberto = verificarDisponibilidadeFormulario(); var base = ScriptApp.getService().getUrl(); ?>
+  <style>
+    /* ---------- Design tokens (paleta do brasão de Cubatão) ---------- */
+    :root{
+      --azul:#1D8ECE; --azul-escuro:#0F5E91;
+      --vermelho:#E2231A;
+      --verde:#009E49; --verde-escuro:#00763a;
+      --amarelo:#FFD400;
+      --cinza:#9AA3AC; --carvao:#1F2933;
+      --bg:#EEF2F6;
+      --surface:#FFFFFF;
+      --radius:16px;
+      --sombra: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+      --sombra-hover: 0 4px 10px rgba(15,23,42,.06), 0 16px 36px rgba(15,23,42,.12);
+      --easing: cubic-bezier(.16,1,.3,1);
+    }
+    *{box-sizing:border-box;}
+    body{
+      font-family:'Inter',Arial,Helvetica,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(29,142,206,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, #E4EAF1 100%);
+      color:var(--carvao);margin:0;min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;
+      animation:fadeIn .18s var(--easing);
+    }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+    /* ---------- Cabeçalho ---------- */
+    .topo{text-align:center;margin-bottom:32px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+    .brasao{
+      width:64px;height:64px;border-radius:50%;
+      background:var(--surface);
+      display:flex;align-items:center;justify-content:center;
+      font-size:30px;box-shadow:var(--sombra);
+      border:3px solid var(--amarelo);
+      animation:popIn .28s var(--easing) .05s both;
+    }
+    @keyframes popIn{ from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);} }
+    .topo h1{
+      color:var(--azul-escuro);font-size:clamp(20px,4vw,26px);
+      text-transform:uppercase;letter-spacing:1.5px;margin:0;font-weight:800;
+    }
+    .topo p{color:#5b6b7a;font-size:14px;margin:0;letter-spacing:.5px;}
+    .faixa{
+      width:64px;height:4px;border-radius:2px;
+      background:linear-gradient(90deg,var(--vermelho),var(--amarelo),var(--verde));
+      margin-top:2px;
+    }
+
+    /* ---------- Cards de navegação ---------- */
+    .opcoes{display:grid;grid-template-columns:1fr;gap:16px;width:100%;max-width:460px;}
+    .opcao{
+      position:relative;display:flex;align-items:center;gap:16px;
+      text-decoration:none;background:var(--surface);
+      border:1px solid rgba(15,23,42,.06);border-radius:var(--radius);
+      padding:20px 22px;box-shadow:var(--sombra);color:inherit;
+      transition:transform .15s var(--easing), box-shadow .15s var(--easing), border-color .15s var(--easing);
+      overflow:hidden;
+      opacity:0; transform:translateY(14px);
+      animation:slideUp .28s var(--easing) forwards;
+    }
+    .opcao:nth-child(1){animation-delay:.10s;}
+    .opcao:nth-child(2){animation-delay:.18s;}
+    .opcao:nth-child(3){animation-delay:.26s;}
+    @keyframes slideUp{ to{opacity:1; transform:translateY(0);} }
+
+    .opcao::before{
+      content:'';position:absolute;inset:0 auto 0 0;width:4px;
+      background:var(--azul);transform:scaleY(0);transform-origin:top;
+      transition:transform .18s var(--easing);
+    }
+    .opcao:hover{transform:translateY(-3px);box-shadow:var(--sombra-hover);border-color:rgba(29,142,206,.25);}
+    .opcao:hover::before{transform:scaleY(1);}
+    .opcao:active{transform:translateY(-1px) scale(.99);}
+
+    .icone-wrap{
+      flex:0 0 auto;width:48px;height:48px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;font-size:22px;
+      background:rgba(29,142,206,.10);color:var(--azul-escuro);
+      transition:transform .18s var(--easing), background .18s var(--easing);
+    }
+    .opcao:hover .icone-wrap{transform:scale(1.08) rotate(-4deg);}
+
+    .opcao .texto{flex:1;min-width:0;}
+    .opcao h2{margin:0 0 3px;font-size:16.5px;color:var(--carvao);font-weight:700;display:flex;align-items:center;gap:8px;}
+    .opcao p{margin:0;font-size:13px;color:#667;line-height:1.45;}
+    .seta{flex:0 0 auto;font-size:18px;color:var(--cinza);transition:transform .15s var(--easing), color .15s var(--easing);}
+    .opcao:hover .seta{transform:translateX(4px);color:var(--azul);}
+
+    /* Card principal (inscrição aberta) — destaque */
+    .opcao.principal{
+      background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);
+      border-color:transparent;color:#fff;
+    }
+    .opcao.principal::before{background:var(--amarelo);}
+    .opcao.principal .icone-wrap{background:rgba(255,255,255,.16);color:#fff;}
+    .opcao.principal h2{color:#fff;}
+    .opcao.principal p{color:rgba(255,255,255,.85);}
+    .opcao.principal .seta{color:rgba(255,255,255,.7);}
+    .opcao.principal:hover .seta{color:#fff;}
+
+    /* Card desativado */
+    .opcao.desativada{
+      pointer-events:none;cursor:default;
+      background:repeating-linear-gradient(135deg, #fff 0 12px, #F6F7F9 12px 24px);
+    }
+    .opcao.desativada .icone-wrap{background:rgba(154,163,172,.18);color:var(--cinza);}
+    .opcao.desativada h2{color:#7a8794;}
+    .opcao.desativada p{color:#9aa3ac;}
+
+    .badge{
+      display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;
+      background:var(--vermelho);color:#fff;padding:3px 9px;border-radius:20px;
+      letter-spacing:.4px;text-transform:uppercase;
+    }
+    .badge-online{
+      display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+      background:rgba(255,255,255,.18);color:#fff;padding:3px 9px;border-radius:20px;
+      letter-spacing:.4px;text-transform:uppercase;
+    }
+    .badge-online .dot{width:6px;height:6px;border-radius:50%;background:var(--amarelo);animation:pulse 1.6s ease-in-out infinite;}
+    @keyframes pulse{ 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.4; transform:scale(.7);} }
+
+    .rodape{margin-top:30px;font-size:12px;color:#8a97a3;text-align:center;letter-spacing:.3px;}
+    .rodape strong{color:#5b6b7a;}
+  </style>
+</head>
+<body>
+  <div class="topo">
+    <div class="brasao">🏛️</div>
+    <h1>Conservatório Municipal de Cubatão</h1>
+    <p>Processo Seletivo 2027</p>
+    <div class="faixa"></div>
+  </div>
+
+  <div class="opcoes">
+    <? if (aberto) { ?>
+      <a class="opcao principal" href="<?= base ?>?view=inscricao">
+        <div class="icone-wrap">📝</div>
+        <div class="texto">
+          <h2>Realizar Inscrição <span class="badge-online"><span class="dot"></span>Aberto</span></h2>
+          <p>Preencha sua ficha e garanta sua vaga na seletiva.</p>
+        </div>
+        <div class="seta">→</div>
+      </a>
+    <? } else { ?>
+      <div class="opcao desativada">
+        <div class="icone-wrap">📝</div>
+        <div class="texto">
+          <h2>Realizar Inscrição <span class="badge">Encerradas</span></h2>
+          <p>O período de inscrições está encerrado no momento.</p>
+        </div>
+        <div class="seta">→</div>
+      </div>
+    <? } ?>
+
+    <a class="opcao" href="<?= base ?>?view=consulta">
+      <div class="icone-wrap">🔍</div>
+      <div class="texto">
+        <h2>Consultar Status</h2>
+        <p>Acompanhe sua posição e a situação do pagamento pelo CPF.</p>
+      </div>
+      <div class="seta">→</div>
+    </a>
+
+    <a class="opcao" href="<?= base ?>?view=admin">
+      <div class="icone-wrap">⚙️</div>
+      <div class="texto">
+        <h2>Área Administrativa</h2>
+        <p>Acesso restrito à equipe do Conservatório.</p>
+      </div>
+      <div class="seta">→</div>
+    </a>
+  </div>
+
+  <div class="rodape"><strong>Conservatório Municipal de Cubatão</strong> · Cubatão/SP</div>
+</body>
+</html>

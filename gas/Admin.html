@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --azul:#1D8ECE; --azul-escuro:#0F5E91;
+      --vermelho:#E2231A;
+      --verde:#009E49; --verde-escuro:#00763a;
+      --amarelo:#FFD400;
+      --cinza:#9AA3AC; --carvao:#1F2933;
+      --bg:#EEF2F6; --surface:#FFFFFF;
+      --radius:16px;
+      --sombra: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+      --sombra-hover: 0 4px 10px rgba(15,23,42,.06), 0 16px 36px rgba(15,23,42,.12);
+      --easing: cubic-bezier(.16,1,.3,1);
+    }
+    *{box-sizing:border-box;}
+    body{
+      font-family:'Inter',Arial,sans-serif;padding:20px;margin:0;color:var(--carvao);
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(29,142,206,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, #E4EAF1 100%);
+      animation:fadeIn .18s var(--easing);
+    }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+    .card{background:var(--surface);padding:30px;border-radius:var(--radius);box-shadow:var(--sombra);border:1px solid rgba(15,23,42,.06);max-width:850px;margin:auto;animation:popIn .28s var(--easing) .05s both;}
+    @keyframes popIn{ from{opacity:0; transform:scale(.98);} to{opacity:1; transform:scale(1);} }
+
+    h2,h1{color:var(--azul-escuro);margin-top:0;text-align:center;font-weight:800;}
+    .subt{text-align:center;color:#778;font-size:13px;margin:-6px 0 22px;}
+    input,select{width:100%;padding:12px;margin:10px 0;box-sizing:border-box;border:1px solid #d9e1ea;background:#fbfcfe;border-radius:10px;font-size:15px;color:var(--carvao);transition:border-color .15s var(--easing), box-shadow .15s var(--easing);}
+    input:focus,select:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(29,142,206,.15);}
+    button{padding:12px 20px;background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:700;box-shadow:0 6px 16px rgba(29,142,206,.25);transition:transform .15s var(--easing), box-shadow .15s var(--easing), background .2s;}
+    button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(29,142,206,.32);}
+    button:active{transform:translateY(0) scale(.99);}
+    button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+    .btn-salvar{background:linear-gradient(135deg,var(--verde) 0%, var(--verde-escuro) 100%);font-size:16px;margin-top:20px;width:100%;box-shadow:0 6px 16px rgba(0,158,73,.25);}
+    .btn-salvar:hover{box-shadow:0 10px 22px rgba(0,158,73,.32);}
+    .btn-sec{background:#fff;color:var(--azul-escuro);border:1px solid #d9e1ea;padding:8px 14px;font-size:13px;box-shadow:none;font-weight:600;}
+    .btn-sec:hover{background:#eef6fb;border-color:var(--azul);box-shadow:none;}
+    .step{display:none;} .active{display:block;}
+    table{width:100%;border-collapse:collapse;margin:15px 0;font-size:14px;}
+    .tabela-scroll{
+      overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;
+      box-shadow:var(--sombra);
+      -webkit-mask-image:linear-gradient(to right, transparent 0, #000 0, #000 calc(100% - 24px), transparent 100%);
+      mask-image:linear-gradient(to right, transparent 0, #000 0, #000 calc(100% - 24px), transparent 100%);
+    }
+    .tabela-scroll table{margin:0;min-width:560px;}
+    th,td{padding:10px;border:1px solid #e9edf2;text-align:left;}
+    th{background:#eef2f6;color:#445;}
+    .painel-secao{border:1px solid #eef1f4;padding:20px;border-radius:var(--radius);margin-bottom:18px;background:#fafcfe;text-align:left;}
+    .painel-secao h3{margin-top:0;font-size:16px;border-bottom:1px solid #e9edf2;padding-bottom:8px;color:var(--azul-escuro);}
+    .dash-container{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px;}
+    .dash-card{background:#fff;padding:15px;border-radius:12px;text-align:center;border:1px solid #e9edf2;box-shadow:var(--sombra);transition:transform .15s var(--easing), box-shadow .15s var(--easing);}
+    .dash-card:hover{transform:translateY(-2px);box-shadow:var(--sombra-hover);}
+    .dash-card h4{margin:0;font-size:12px;color:#8a97a3;text-transform:uppercase;letter-spacing:.4px;}
+    .dash-card .valor{font-size:24px;font-weight:800;color:var(--carvao);margin-top:6px;}
+    @media (max-width:600px){
+      .dash-container{grid-template-columns:repeat(2,1fr);gap:10px;}
+      .dash-card{padding:12px;}
+      .dash-card .valor{font-size:20px;}
+    }
+    .barra-progresso-bg{background:#e9edf2;border-radius:10px;height:12px;width:100%;overflow:hidden;margin-top:5px;}
+    .barra-progresso-fill{background:linear-gradient(90deg,var(--verde),var(--verde-escuro));height:100%;width:0%;transition:width .6s var(--easing);}
+    .menu-voltar{text-align:center;margin-top:20px;font-size:14px;}
+    .menu-voltar a{color:#5b6b7a;text-decoration:none;font-weight:600;transition:color .2s;}
+    .menu-voltar a:hover{color:var(--azul);}
+    .spinner{display:inline-block;width:15px;height:15px;border:3px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-90px);background:var(--carvao);color:#fff;padding:14px 22px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;opacity:0;transition:.18s var(--easing);z-index:9999;border-left:4px solid var(--verde);max-width:90%;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    .toast.erro{border-left-color:var(--vermelho);}
+
+    /* Menu de sub-seções (estilo da tela inicial) */
+    .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+    .menu-card{
+      display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;
+      border:1px solid rgba(15,23,42,.06);border-radius:var(--radius);padding:20px;cursor:pointer;color:inherit;
+      box-shadow:var(--sombra);transition:transform .15s var(--easing), box-shadow .15s var(--easing), border-color .15s var(--easing);
+      position:relative;overflow:hidden;
+      opacity:0;transform:translateY(14px);animation:slideUp .28s var(--easing) forwards;
+    }
+    .menu-card:nth-child(1){animation-delay:.06s;}
+    .menu-card:nth-child(2){animation-delay:.12s;}
+    .menu-card:nth-child(3){animation-delay:.18s;}
+    .menu-card:nth-child(4){animation-delay:.24s;}
+    @keyframes slideUp{ to{opacity:1; transform:translateY(0);} }
+    .menu-card::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--azul);transform:scaleY(0);transform-origin:top;transition:transform .18s var(--easing);}
+    .menu-card:hover{transform:translateY(-3px);box-shadow:var(--sombra-hover);border-color:rgba(29,142,206,.25);background:#fff;}
+    .menu-card:hover::before{transform:scaleY(1);}
+    .menu-card .ic{font-size:24px;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(29,142,206,.10);transition:transform .18s var(--easing);}
+    .menu-card:hover .ic{transform:scale(1.08) rotate(-4deg);}
+    .menu-card .tit{font-size:17px;font-weight:700;color:var(--azul-escuro);margin-top:10px;}
+    .menu-card small{color:#778;font-size:12.5px;margin-top:4px;}
+
+    .secao{display:none;} .secao.active{display:block;animation:fade .18s var(--easing);}
+    @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+    .secao-back{margin-bottom:14px;}
+    .add-vaga{display:flex;gap:10px;align-items:center;margin:6px 0 4px;}
+    .add-vaga input{margin:0;}
+    .add-vaga input#novo-curso{flex:1;}
+    .add-vaga input#novas-vagas{width:90px;flex:0 0 auto;}
+    .btn-add{display:flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto;padding:12px 18px;}
+    .btn-add span{font-size:18px;line-height:1;font-weight:800;}
+    @media (max-width:480px){
+      .add-vaga{flex-wrap:wrap;}
+      .add-vaga input#novo-curso{flex:1 1 100%;}
+      .add-vaga input#novas-vagas{flex:1;width:auto;}
+      .btn-add{flex:1;justify-content:center;}
+    }
+    .lim-input{width:80px;padding:7px;margin:0;}
+    .qr-box{text-align:center;background:#fff;border:1px solid #eef1f4;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--sombra);}
+    .qr-box img{width:200px;height:200px;background:#fff;border-radius:12px;}
+
+    /* Cabeçalho de impressão */
+    .print-cabecalho{display:none;}
+    @media print{
+      body{background:#fff;}
+      .card{box-shadow:none;}
+      #step-email,#step-codigo,#admin-menu,#sec-consulta,#sec-config,#sec-qr,
+      .menu-voltar,.secao-back,.acoes-export,.add-vaga,.btn-salvar,.col-acao{display:none!important;}
+      #sec-stats{display:block!important;}
+      .tabela-scroll{overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important;box-shadow:none!important;}
+      .tabela-scroll table{min-width:0!important;}
+      .print-cabecalho{display:block;text-align:center;margin-bottom:18px;border-bottom:2px solid var(--azul);padding-bottom:12px;}
+      .print-cabecalho h2{margin:0;color:var(--azul);}
+      .print-cabecalho p{margin:4px 0 0;color:#444;font-size:13px;}
+      .lim-input{border:none;background:transparent;font-weight:bold;width:auto;padding:0;}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- AUTENTICAÇÃO -->
+    <div id="step-email" class="step active">
+      <h1>Acesso Restrito Administrativo</h1>
+      <input type="email" id="email" placeholder="E-mail funcional cadastrado">
+      <button onclick="solicitarCodigo()" id="btn-email" style="width:100%;">Enviar Token de Acesso</button>
+      <div id="erro-email" style="color:red;margin-top:10px;display:none;"></div>
+    </div>
+
+    <div id="step-codigo" class="step">
+      <h1>Verificação de Segurança (2 Fatores)</h1>
+      <p style="text-align:center;">Insira o código de 6 dígitos enviado ao seu e-mail.</p>
+      <input type="text" id="codigo" placeholder="000000" maxlength="6" style="font-size:20px;letter-spacing:5px;">
+      <button onclick="validarCodigo()" id="btn-codigo" style="width:100%;">Autenticar e Entrar</button>
+      <div id="erro-codigo" style="color:red;margin-top:10px;display:none;"></div>
+    </div>
+
+    <!-- PAINEL -->
+    <div id="step-painel" class="step">
+      <h2 id="titulo-painel">Painel Administrativo</h2>
+      <p class="subt">Conservatório Municipal de Cubatão · Processo Seletivo 2027</p>
+
+      <!-- MENU DE SUB-SEÇÕES -->
+      <div id="admin-menu" class="menu-grid">
+        <button class="menu-card" onclick="abrirSecao('consulta')">
+          <span class="ic">🔍</span><span class="tit">Consulta de Alunos</span>
+          <small>Buscar candidatos por nome, CPF ou e-mail.</small>
+        </button>
+        <button class="menu-card" onclick="abrirSecao('stats')">
+          <span class="ic">📊</span><span class="tit">Vagas &amp; Estatísticas</span>
+          <small>Ocupação, pendências e limites por instrumento.</small>
+        </button>
+        <button class="menu-card diretor-only" onclick="abrirSecao('config')">
+          <span class="ic">⚙️</span><span class="tit">Trava Manual e Calendário</span>
+          <small>Abrir/fechar inscrições e definir data limite.</small>
+        </button>
+        <button class="menu-card diretor-only" onclick="abrirSecao('qr')">
+          <span class="ic">📱</span><span class="tit">Divulgação / QR</span>
+          <small>QR Code e links de inscrição e consulta.</small>
+        </button>
+      </div>
+
+      <!-- SEÇÃO: CONSULTA -->
+      <div id="sec-consulta" class="secao">
+        <button class="secao-back btn-sec" onclick="voltarMenu()">⬅ Menu</button>
+        <div class="painel-secao">
+          <h3>🔍 Consulta de Alunos</h3>
+          <div style="display:flex;gap:10px;">
+            <input type="text" id="termo-busca" placeholder="Nome, Sobrenome, CPF ou E-mail">
+            <button onclick="buscarCandidato()" id="btn-busca" style="margin-top:10px;height:45px;">Pesquisar</button>
+          </div>
+          <div id="resultado-busca" style="margin-top:15px;font-size:13px;background:#fff;padding:12px;border-radius:4px;max-height:260px;overflow-y:auto;border:1px solid #ddd;line-height:1.5;">Insira os critérios e clique em Pesquisar.</div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO: VAGAS & ESTATÍSTICAS (unificada) -->
+      <div id="sec-stats" class="secao">
+        <button class="secao-back btn-sec" onclick="voltarMenu()">⬅ Menu</button>
+        <div class="painel-secao">
+          <div class="print-cabecalho">
+            <h2>Conservatório Municipal de Cubatão</h2>
+            <p>Processo Seletivo 2027 — Relatório de Inscrições</p>
+            <p id="print-data"></p>
+          </div>
+
+          <h3>📊 Vagas &amp; Estatísticas</h3>
+          <div class="dash-container">
+            <div class="dash-card"><h4>Total Intenções</h4><div class="valor" id="dash-total">0</div></div>
+            <div class="dash-card"><h4>Vagas Pagas</h4><div class="valor" id="dash-pagos" style="color:var(--verde);">0</div></div>
+            <div class="dash-card"><h4>Aguardando Pgto</h4><div class="valor" id="dash-pendentes" style="color:#b38f00;">0</div></div>
+            <div class="dash-card"><h4>Taxa Ocupação</h4><div class="valor" id="dash-porcentagem">0%</div></div>
+          </div>
+          <label><b>Preenchimento Geral de Vagas:</b></label>
+          <div class="barra-progresso-bg"><div id="barra-fill" class="barra-progresso-fill"></div></div>
+
+          <div class="tabela-scroll">
+            <table style="margin-top:18px;">
+              <thead><tr>
+                <th>Instrumento</th>
+                <th style="text-align:center;background:#f0f4f8;">Total</th>
+                <th style="text-align:center;background:#eafaf1;color:green;">Pagas</th>
+                <th style="text-align:center;background:#fffde6;color:#b38f00;">Pendentes</th>
+                <th style="text-align:center;">Limite de Vagas</th>
+                <th class="col-acao" style="text-align:center;">Ação</th>
+              </tr></thead>
+              <tbody id="corpo-stats"><tr><td colspan="6"><span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Processando dados...</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="add-vaga">
+            <input type="text" id="novo-curso" placeholder="Novo instrumento (ex: Saxofone)">
+            <input type="number" id="novas-vagas" placeholder="Vagas">
+            <button class="btn-add" onclick="adicionarCurso()"><span>+</span> Adicionar</button>
+          </div>
+
+          <div class="acoes-export" style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button class="btn-sec" onclick="exportarCSV()">⬇ Exportar CSV</button>
+            <button class="btn-sec" onclick="imprimir()">🖨 Imprimir / Salvar PDF</button>
+          </div>
+
+          <button onclick="salvarAlteracoes()" class="btn-salvar diretor-only">Salvar Limites de Vagas</button>
+        </div>
+      </div>
+
+      <!-- SEÇÃO: TRAVA MANUAL E CALENDÁRIO -->
+      <div id="sec-config" class="secao">
+        <button class="secao-back btn-sec" onclick="voltarMenu()">⬅ Menu</button>
+        <div class="painel-secao">
+          <h3>⚙ Trava Manual e Calendário</h3>
+          <label><b>Acessibilidade do Formulário:</b></label>
+          <select id="status-manual">
+            <option value="ABERTO">Formulário Aberto (Operação Normal)</option>
+            <option value="FECHADO">Forçar Fechamento Imediato</option>
+          </select>
+          <label style="display:block;margin-top:15px;"><b>Data/Horário Limite de Encerramento:</b></label>
+          <input type="datetime-local" id="data-encerramento">
+          <button onclick="salvarAlteracoes()" class="btn-salvar">Salvar Configurações</button>
+        </div>
+      </div>
+
+      <!-- SEÇÃO: QR -->
+      <div id="sec-qr" class="secao">
+        <button class="secao-back btn-sec" onclick="voltarMenu()">⬅ Menu</button>
+        <div class="painel-secao">
+          <h3>📱 Divulgação / QR</h3>
+          <div class="qr-box">
+            <p style="margin-top:0;font-weight:bold;">QR de Inscrição</p>
+            <img id="qrInscricao" src="" alt="QR de Inscrição">
+            <p><input type="text" id="linkInscricao" readonly style="text-align:center;font-size:.8rem;"></p>
+            <button class="btn-sec" onclick="copiar('linkInscricao')">Copiar link de inscrição</button>
+          </div>
+          <div class="qr-box">
+            <p style="margin-top:0;font-weight:bold;">QR de Consulta de Status (para candidatos)</p>
+            <img id="qrConsulta" src="" alt="QR de Consulta">
+            <p><input type="text" id="linkConsulta" readonly style="text-align:center;font-size:.8rem;"></p>
+            <button class="btn-sec" onclick="copiar('linkConsulta')">Copiar link de consulta</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="menu-voltar"><a href="<?= ScriptApp.getService().getUrl() ?>" onclick="return confirmarSaida(event)">⬅ Voltar à tela inicial</a></div>
+
+  <script>
+    let emailAdmin='', configuracoesVagas=[], ultimoBreakdown={}, ultimoDashboard={}, ehDiretor=false, qrCarregado=false;
+
+    function toast(msg,tipo){
+      let t=document.getElementById('toast');
+      if(!t){ t=document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
+      t.className='toast '+(tipo||''); t.innerText=msg;
+      requestAnimationFrame(()=>t.classList.add('show'));
+      clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),3500);
+    }
+    function mostrarErro(id,msg){ const el=document.getElementById(id); el.innerText=msg; el.style.display='block'; }
+    function carregando(btn,txt){ btn.dataset.orig=btn.innerText; btn.disabled=true; btn.innerHTML='<span class="spinner"></span>'+txt; }
+    function restaurar(btn){ btn.disabled=false; btn.innerText=btn.dataset.orig; }
+
+    /* ---------- Autenticação ---------- */
+    function solicitarCodigo(){
+      document.getElementById('erro-email').style.display='none';
+      emailAdmin=document.getElementById('email').value.trim();
+      if(!emailAdmin) return;
+      const btn=document.getElementById('btn-email'); carregando(btn,'Enviando...');
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res.sucesso){ document.getElementById('step-email').classList.remove('active'); document.getElementById('step-codigo').classList.add('active'); toast('Token enviado ao seu e-mail.'); }
+        else mostrarErro('erro-email',res.message);
+      }).withFailureHandler(function(){ restaurar(btn); mostrarErro('erro-email','Falha ao enviar. Tente novamente.'); }).solicitarAcessoAdmin(emailAdmin);
+    }
+
+    function validarCodigo(){
+      document.getElementById('erro-codigo').style.display='none';
+      const codigo=document.getElementById('codigo').value.trim();
+      if(!codigo) return;
+      const btn=document.getElementById('btn-codigo'); carregando(btn,'Validando...');
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res.sucesso){ document.getElementById('step-codigo').classList.remove('active'); carregarDadosPainel(res.nivel); }
+        else mostrarErro('erro-codigo',res.message);
+      }).withFailureHandler(function(){ restaurar(btn); mostrarErro('erro-codigo','Falha na validação.'); }).validarCodigoAdmin(emailAdmin,codigo);
+    }
+
+    /* ---------- Carregamento ---------- */
+    function carregarDadosPainel(nivel){
+      ehDiretor = (nivel==='DIRETOR');
+      document.getElementById('step-painel').classList.add('active');
+      document.getElementById('titulo-painel').innerText = ehDiretor ? 'Painel Administrativo' : 'Painel do Professor';
+      document.querySelectorAll('.diretor-only').forEach(el=>{ el.style.display = ehDiretor ? '' : 'none'; });
+
+      google.script.run.withSuccessHandler(function(dados){
+        configuracoesVagas = dados.vagas.slice();
+        ultimoBreakdown = dados.detalheInstrumentos || {};
+        ultimoDashboard = dados.dashboard || {};
+        // garante que todo instrumento com inscrições apareça (mesmo sem limite configurado)
+        Object.keys(ultimoBreakdown).forEach(inst=>{
+          if(!configuracoesVagas.some(v=>v.instrumento===inst))
+            configuracoesVagas.push({ instrumento:inst, vagas: ultimoBreakdown[inst].limite||0 });
+        });
+        document.getElementById('status-manual').value = dados.statusManual || 'ABERTO';
+        document.getElementById('data-encerramento').value = dados.dataEncerramento || '';
+        renderStats();
+      }).withFailureHandler(function(err){ toast('Erro ao carregar: '+err.message,'erro'); }).obterDadosPainelCompleto();
+    }
+
+    /* ---------- Roteamento de sub-seções ---------- */
+    function abrirSecao(nome){
+      document.getElementById('admin-menu').style.display='none';
+      document.querySelectorAll('.secao').forEach(s=>s.classList.remove('active'));
+      document.getElementById('sec-'+nome).classList.add('active');
+      if(nome==='stats') carimboData();
+      if(nome==='qr' && !qrCarregado) carregarQR();
+    }
+    function confirmarSaida(e){
+      if(document.getElementById('step-painel').classList.contains('active')){
+        if(!confirm('Tem certeza que deseja sair do painel administrativo?')){ e.preventDefault(); return false; }
+      }
+      return true;
+    }
+
+    function voltarMenu(){
+      document.querySelectorAll('.secao').forEach(s=>s.classList.remove('active'));
+      document.getElementById('admin-menu').style.display='grid';
+    }
+
+    /* ---------- Vagas & Estatísticas ---------- */
+    function renderStats(){
+      document.getElementById('dash-total').innerText = ultimoDashboard.totalInscricoes||0;
+      document.getElementById('dash-pagos').innerText = ultimoDashboard.pagos||0;
+      document.getElementById('dash-pendentes').innerText = ultimoDashboard.aguardando||0;
+      const cap = ultimoDashboard.capacidadeTotal||0;
+      const pct = cap>0 ? Math.round((ultimoDashboard.pagos/cap)*100) : 0;
+      document.getElementById('dash-porcentagem').innerText = pct+'%';
+      document.getElementById('barra-fill').style.width = pct+'%';
+
+      const tb=document.getElementById('corpo-stats'); tb.innerHTML='';
+      configuracoesVagas.forEach(function(item,index){
+        const s=ultimoBreakdown[item.instrumento]||{total:0,pagos:0,pendentes:0};
+        const limite = ehDiretor
+          ? '<input type="number" class="lim-input" value="'+item.vagas+'" onchange="atualizarItem('+index+',\'vagas\',this.value)">'
+          : '<span>'+item.vagas+'</span>';
+        const acao = ehDiretor ? '<button style="background:#dc3545;padding:5px 10px;" onclick="removerCurso('+index+')">X</button>' : '';
+        tb.innerHTML+='<tr>'
+          +'<td><strong>'+item.instrumento+'</strong></td>'
+          +'<td style="text-align:center;background:#f0f4f8;font-weight:bold;">'+s.total+'</td>'
+          +'<td style="text-align:center;background:#eafaf1;color:green;font-weight:bold;">'+s.pagos+'</td>'
+          +'<td style="text-align:center;background:#fffde6;color:#b38f00;">'+s.pendentes+'</td>'
+          +'<td style="text-align:center;">'+limite+'</td>'
+          +'<td class="col-acao" style="text-align:center;">'+acao+'</td></tr>';
+      });
+    }
+    function atualizarItem(index,campo,valor){ configuracoesVagas[index][campo]=valor; }
+    function removerCurso(index){ configuracoesVagas.splice(index,1); renderStats(); }
+    function adicionarCurso(){
+      const curso=document.getElementById('novo-curso').value.trim(), vagas=document.getElementById('novas-vagas').value.trim();
+      if(curso&&vagas){ configuracoesVagas.push({instrumento:curso,vagas:parseInt(vagas)});
+        document.getElementById('novo-curso').value=''; document.getElementById('novas-vagas').value=''; renderStats(); }
+    }
+
+    function salvarAlteracoes(){
+      const btns=document.querySelectorAll('.btn-salvar'); btns.forEach(b=>carregando(b,'Salvando...'));
+      const pacote={ vagas:configuracoesVagas, statusManual:document.getElementById('status-manual').value, dataEncerramento:document.getElementById('data-encerramento').value };
+      google.script.run.withSuccessHandler(function(){
+        btns.forEach(b=>restaurar(b)); toast('Configurações sincronizadas com sucesso!'); carregarDadosPainel(ehDiretor?'DIRETOR':'PROFESSOR');
+      }).withFailureHandler(function(){ btns.forEach(b=>restaurar(b)); toast('Falha ao salvar.','erro'); }).salvarDadosPainelCompleto(pacote);
+    }
+
+    /* ---------- Consulta de alunos ---------- */
+    function buscarCandidato(){
+      const termo=document.getElementById('termo-busca').value; if(!termo) return;
+      const btn=document.getElementById('btn-busca'); carregando(btn,'...');
+      document.getElementById('resultado-busca').innerHTML='<span class="spinner" style="border-color:rgba(29,142,206,.25);border-top-color:var(--azul);"></span>Varrendo base de dados...';
+      google.script.run.withSuccessHandler(function(res){
+        restaurar(btn);
+        if(res.length===0){ document.getElementById('resultado-busca').innerHTML='Nenhum registro localizado.'; return; }
+        let html='';
+        for(let i=0;i<res.length;i++){ let c=res[i];
+          html+='<div style="border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:6px;"><strong>'+c.nome+'</strong> - CPF: '+c.cpf+'<br>'
+            +'<span style="color:#555">Curso: '+c.instrumento+' | Status: <b>'+c.status+'</b> | Data: '+c.data+'</span></div>';
+        }
+        document.getElementById('resultado-busca').innerHTML=html;
+      }).withFailureHandler(function(){ restaurar(btn); toast('Falha na busca.','erro'); }).adminConsultarCandidato(termo);
+    }
+
+    /* ---------- QR ---------- */
+    function carregarQR(){
+      google.script.run.withSuccessHandler(function(d){ document.getElementById('qrInscricao').src=d.qr; document.getElementById('linkInscricao').value=d.url; }).obterUrlQrInscricao();
+      google.script.run.withSuccessHandler(function(d){ document.getElementById('qrConsulta').src=d.qr; document.getElementById('linkConsulta').value=d.url; qrCarregado=true; }).obterUrlQrConsulta();
+    }
+    function copiar(id){
+      const v=document.getElementById(id).value;
+      if(navigator.clipboard) navigator.clipboard.writeText(v).then(()=>toast('Link copiado!'));
+      else { const el=document.getElementById(id); el.select(); document.execCommand('copy'); toast('Link copiado!'); }
+    }
+
+    /* ---------- Export / Impressão ---------- */
+    function carimboData(){
+      const d=new Date();
+      document.getElementById('print-data').innerText='Emitido em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    }
+    function imprimir(){ carimboData(); window.print(); }
+    window.onbeforeprint=carimboData;
+
+    function exportarCSV(){
+      const d=new Date();
+      const rows=[
+        ['Conservatório Municipal de Cubatão - Processo Seletivo 2027'],
+        ['Relatório de Inscrições - '+d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})],
+        [],
+        ['Instrumento','Total','Pagas','Pendentes','Limite de Vagas']
+      ];
+      configuracoesVagas.forEach(item=>{
+        const s=ultimoBreakdown[item.instrumento]||{total:0,pagos:0,pendentes:0};
+        rows.push([item.instrumento,s.total,s.pagos,s.pendentes,item.vagas]);
+      });
+      const csv=rows.map(r=>r.join(';')).join('\n');
+      const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='estatisticas_inscricoes_'+d.toISOString().slice(0,10)+'.csv'; a.click();
+      toast('CSV exportado.');
+    }
+  </script>
+</body>
+</html>
