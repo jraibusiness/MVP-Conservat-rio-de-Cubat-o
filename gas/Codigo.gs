@@ -17,6 +17,22 @@ const ASAAS_API_KEY = PropertiesService.getScriptProperties().getProperty('ASAAS
 const ASAAS_API_URL = 'https://api.asaas.com/v3';
 const GEMINI_API_KEY = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
 
+// =====================================================================
+//  SEGURANÇA DO WEBHOOK (ASAAS) — PASSO 1
+//  Rode gerarTokenWebhook() uma vez no editor, guarde o token exibido no
+//  Log e confirme com verificarToken(). Usado nos próximos passos para
+//  validar o parâmetro ?token= do doPost.
+// =====================================================================
+function gerarTokenWebhook() {
+  const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  PropertiesService.getScriptProperties().setProperty('WEBHOOK_TOKEN', token);
+  Logger.log('GUARDE este token: ' + token);
+}
+
+function verificarToken() {
+  Logger.log(PropertiesService.getScriptProperties().getProperty('WEBHOOK_TOKEN'));
+}
+
 // ---------- Índices canônicos (evita números mágicos) ----------
 const COL = {
   DATA: 0, NOME: 1, SOBRENOME: 2, EMAIL: 3, CPF: 4, TEL: 5, NASC: 6, ENDERECO: 7,
