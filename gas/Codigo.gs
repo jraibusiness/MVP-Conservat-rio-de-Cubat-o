@@ -176,6 +176,18 @@ function doGet(e) {
 // =====================================================================
 //  WEBHOOK ASAAS  (corrigido: match em col 16 / status col 18 / data pgto col 20)
 // =====================================================================
+// Reconsulta o status oficial de uma cobrança direto na API do Asaas
+// (fonte da verdade — nunca confiar no payload recebido no webhook).
+function consultarStatusPagamentoAsaas(cobrancaId) {
+  const resp = UrlFetchApp.fetch(`${ASAAS_API_URL}/payments/${cobrancaId}`, {
+    method: 'get',
+    headers: { 'access_token': ASAAS_API_KEY },
+    muteHttpExceptions: true
+  });
+  const json = JSON.parse(resp.getContentText());
+  return json && json.status ? json.status : null;
+}
+
 function doPost(e) {
   try {
     const tokenEsperado = PropertiesService.getScriptProperties().getProperty('WEBHOOK_TOKEN');
@@ -184,9 +196,13 @@ function doPost(e) {
     }
 
     const postData = JSON.parse(e.postData.contents);
-    const evento = postData.event;
     const cobrancaId = postData.payment ? postData.payment.id : null;
     if (!cobrancaId) return respostaJSON({ sucesso: true, ignorado: true });
+
+    // Não confiamos no payload do POST (pode ser forjado): reconsultamos o
+    // status real da cobrança direto na API do Asaas, autenticado com nossa chave.
+    const statusReal = consultarStatusPagamentoAsaas(cobrancaId);
+    if (!statusReal) return respostaJSON({ sucesso: true, ignorado: true });
 
     const aba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(NOME_ABA_INSCRICOES);
     const dados = aba.getDataRange().getValues();
@@ -194,7 +210,7 @@ function doPost(e) {
     for (let i = 1; i < dados.length; i++) {
       if (dados[i][COL.ASAAS_COBRANCA] !== cobrancaId) continue;
 
-      if (evento === 'PAYMENT_CONFIRMED' || evento === 'PAYMENT_RECEIVED') {
+      if (statusReal === 'CONFIRMED' || statusReal === 'RECEIVED' || statusReal === 'RECEIVED_IN_CASH') {
         aba.getRange(i + 1, COL.STATUS + 1).setValue('PAGO');
         aba.getRange(i + 1, COL.DATA_PGTO + 1).setValue(new Date());
 
@@ -211,7 +227,7 @@ function doPost(e) {
         });
       }
 
-      if (evento === 'PAYMENT_OVERDUE' || evento === 'PAYMENT_DELETED') {
+      if (statusReal === 'OVERDUE' || statusReal === 'DELETED' || statusReal === 'REFUNDED') {
         aba.getRange(i + 1, COL.STATUS + 1).setValue('EXPIRADO');
         calcularRanking();
       }
