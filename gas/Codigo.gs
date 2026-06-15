@@ -178,6 +178,11 @@ function doGet(e) {
 // =====================================================================
 function doPost(e) {
   try {
+    const tokenEsperado = PropertiesService.getScriptProperties().getProperty('WEBHOOK_TOKEN');
+    if (!tokenEsperado || e.parameter.token !== tokenEsperado) {
+      return respostaJSON({ sucesso: false, message: 'Não autorizado.' });
+    }
+
     const postData = JSON.parse(e.postData.contents);
     const evento = postData.event;
     const cobrancaId = postData.payment ? postData.payment.id : null;
