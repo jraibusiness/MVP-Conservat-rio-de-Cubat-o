@@ -60,6 +60,38 @@ function configurarPlanilha() {
   }
 }
 
+// =====================================================================
+//  CORREÇÃO ÚNICA — alinhar abas antigas da Inscricoes ao esquema atual
+//  (insere a coluna "Comprovante Isenção" na posição 13, adiciona
+//  "Data Pagamento" no final e corrige os cabeçalhos). Rode uma vez e
+//  confira manualmente o resultado antes de usar o sistema normalmente.
+// =====================================================================
+function corrigirEstruturaInscricoes() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = planilha.getSheetByName(NOME_ABA_INSCRICOES);
+  const cabecalhosCorretos = [
+    'Data/Hora', 'Nome', 'Sobrenome', 'E-mail', 'CPF', 'Telefone', 'Data Nascimento',
+    'Endereço', 'Escolaridade', 'Curso', 'Período', 'Tipo Inscrição', 'Comprovante Isenção',
+    'Forma de Pagamento', 'Asaas Customer ID', 'Asaas Cobrança ID', 'Link de Pagamento',
+    'Status do Pagamento', 'Instrumento', 'Data Pagamento'
+  ];
+
+  const numColunasAtual = aba.getLastColumn();
+  if (numColunasAtual < 20) {
+    // Insere a coluna que falta (Comprovante Isenção) na posição 13
+    aba.insertColumnBefore(13);
+    // Garante 20 colunas (adiciona "Data Pagamento" no final, se necessário)
+    if (aba.getLastColumn() < 20) {
+      aba.insertColumnAfter(aba.getLastColumn());
+    }
+  }
+
+  aba.getRange(1, 1, 1, cabecalhosCorretos.length).setValues([cabecalhosCorretos])
+    .setFontWeight('bold').setBackground('#d9ead3');
+
+  Logger.log('Estrutura da aba Inscricoes corrigida. Total de colunas: ' + aba.getLastColumn());
+}
+
 function inicializarConfigSistema() {
   const planilha = SpreadsheetApp.getActiveSpreadsheet();
   let aba = planilha.getSheetByName('Config_Sistema');
