@@ -15,6 +15,7 @@
 const NOME_ABA_INSCRICOES = 'Inscricoes';
 const ASAAS_API_KEY = PropertiesService.getScriptProperties().getProperty('ASAAS_API_KEY');
 const ASAAS_API_URL = 'https://api.asaas.com/v3';
+const GEMINI_API_KEY = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
 
 // ---------- Índices canônicos (evita números mágicos) ----------
 const COL = {
@@ -109,6 +110,10 @@ function verificarDisponibilidadeFormulario() {
   if (statusManual === 'FECHADO') return false;
   if (dataEncerramento && new Date() > new Date(dataEncerramento)) return false;
   return true;
+}
+
+function include(nomeArquivo) {
+  return HtmlService.createHtmlOutputFromFile(nomeArquivo).getContent();
 }
 
 function doGet(e) {
@@ -800,4 +805,103 @@ function gerarRelatorioPDF() {
 
   const arquivo = DriveApp.createFile(blob);
   return { url: arquivo.getUrl(), nome: nomeArquivo };
+}
+
+// =====================================================================
+//  CHATBOT — DÚVIDAS SOBRE O PROCESSO SELETIVO
+// =====================================================================
+
+// Base de conhecimento curada: edite aqui sempre que houver mudanças no edital,
+// cronograma, cursos, contatos, etc.
+const BASE_CONHECIMENTO_CHATBOT = `
+INSTITUIÇÃO
+- Nome oficial: Escola Técnica de Música e Dança (ETMD) "Ivanildo Rebouças da Silva", popularmente conhecida como Conservatório de Cubatão.
+- Endereço da secretaria: Av. Nações Unidas, 168 – Vila Nova, Cubatão – SP.
+- Horário de atendimento presencial: dias úteis, das 9h às 11h, das 14h às 17h e das 18h às 20h.
+- Canais oficiais: site da Prefeitura de Cubatão (cubatao.sp.gov.br), Diário Oficial Eletrônico de Cubatão (diariooficial.cubatao.sp.gov.br) e Instagram @conservatoriodecubatao.
+
+PROCESSO SELETIVO 2027
+- O processo seletivo ocorre anualmente entre outubro e dezembro, seguindo o mesmo padrão dos anos anteriores.
+- Histórico de referência: em 2025 as inscrições foram de 7 a 25/10/2024 com testes em dezembro/2024; em 2026 (Portaria nº 26/SEDUC) as inscrições foram de 29/10 a 7/11/2025, homologados em 14/11/2025, testes de 8 a 12/12/2025 e resultado final em 12/01/2026.
+- Previsão para 2027: o edital/portaria específico deve ser publicado no Diário Oficial e no site da ETMD no final de setembro/início de outubro de 2026, com testes em dezembro/2026 e início das aulas em 2027. As datas exatas só são confirmadas com a publicação da portaria oficial — sempre oriente o candidato a confirmar no Diário Oficial, no site da ETMD ou diretamente com a secretaria.
+
+CURSOS E FAIXAS ETÁRIAS
+- Dança Iniciante: geralmente para crianças de 6 a 10 anos.
+- Dança Avançada (pontas): adolescentes de 11 a 14 anos.
+- Técnico em Dança (Clássica ou Contemporânea): exige estar matriculado ou ter concluído o Ensino Médio.
+- Música (instrumentos, canto, canto coral e regência): há vagas de Atividades Complementares para iniciantes (alunos do Ensino Fundamental) e vagas do Curso Técnico Profissionalizante.
+- Instrumentos oferecidos incluem (conforme configuração de vagas do ano): Violão, Piano, Violino, Canto Lírico, Sopro, entre outros divulgados no edital de cada ano.
+
+CUSTOS E ISENÇÃO
+- O ensino é 100% gratuito (instituição pública municipal).
+- Há uma taxa de inscrição única de R$ 20,00, revertida para a Associação de Pais e Mestres (APM), usada na manutenção e afinação de instrumentos.
+- Candidatos de baixa renda inscritos em programas sociais do Governo Federal (ex.: CadÚnico) podem solicitar isenção total dessa taxa no ato da inscrição.
+
+CRITÉRIOS DE PRIORIDADE DE VAGA
+1. Alunos matriculados na Rede Municipal de Ensino de Cubatão.
+2. Moradores de Cubatão matriculados em escolas estaduais ou particulares.
+3. Candidatos gerais de outras cidades (vagas remanescentes / cadastro de reserva).
+
+TESTES DE SELEÇÃO
+- Para crianças/iniciantes: testes práticos e de aptidão (ritmo, percepção musical, coordenação motora/flexibilidade para dança).
+- Para cursos técnicos: prova escrita de teoria musical e prova prática (execução de peça musical ou sequência coreográfica diante de banca avaliadora).
+
+COMO FUNCIONA ESTE SISTEMA ONLINE
+- A inscrição é feita pelo próprio site (opção "Realizar Inscrição"), disponível apenas durante o período de inscrições aberto.
+- Após preencher a ficha, pode ser gerada uma cobrança (PIX ou boleto) referente à taxa de R$ 20,00, com prazo de pagamento limitado (normalmente algumas horas). Se vencer sem pagamento, a vaga não é mais reservada e é necessário se inscrever novamente.
+- O candidato pode consultar sua posição/situação a qualquer momento pela opção "Consultar Status", informando o CPF usado na inscrição.
+- Em caso de dúvidas que não constam aqui, ou problemas técnicos no sistema, oriente o candidato a procurar a secretaria da ETMD pelos canais oficiais acima.
+`;
+
+/**
+ * Responde perguntas do candidato sobre o processo seletivo usando a base de
+ * conhecimento curada acima + a API do Gemini.
+ * historico: array opcional de {autor:'usuario'|'bot', texto:string} das últimas mensagens.
+ */
+function responderChatbot(pergunta, historico) {
+  if (!pergunta || !pergunta.trim()) {
+    return { sucesso: false, message: 'Digite sua pergunta.' };
+  }
+  if (!GEMINI_API_KEY) {
+    return { sucesso: false, message: 'Chatbot indisponível no momento. Entre em contato com a secretaria.' };
+  }
+
+  const instrucaoSistema = 'Você é o assistente virtual do Conservatório Municipal de Cubatão (ETMD "Ivanildo Rebouças da Silva"). '
+    + 'Responda em português do Brasil, de forma breve, simpática e objetiva, tirando dúvidas de candidatos e familiares sobre o processo seletivo, cursos, prazos, valores e contatos. '
+    + 'Use APENAS as informações fornecidas abaixo. Se a pergunta não puder ser respondida com essas informações, diga que não tem certeza e oriente o candidato a confirmar com a secretaria da ETMD ou nos canais oficiais (site da Prefeitura, Diário Oficial ou Instagram @conservatoriodecubatao). Nunca invente datas, valores ou regras.\n\n'
+    + BASE_CONHECIMENTO_CHATBOT;
+
+  const contents = [];
+  (historico || []).slice(-6).forEach(function (m) {
+    contents.push({ role: m.autor === 'bot' ? 'model' : 'user', parts: [{ text: m.texto }] });
+  });
+  contents.push({ role: 'user', parts: [{ text: pergunta }] });
+
+  const payload = {
+    systemInstruction: { parts: [{ text: instrucaoSistema }] },
+    contents: contents,
+    generationConfig: { temperature: 0.3, maxOutputTokens: 400 }
+  };
+
+  try {
+    const resp = UrlFetchApp.fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_API_KEY,
+      {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+      }
+    );
+    const json = JSON.parse(resp.getContentText());
+    const texto = json && json.candidates && json.candidates[0]
+      && json.candidates[0].content && json.candidates[0].content.parts
+      && json.candidates[0].content.parts[0] && json.candidates[0].content.parts[0].text;
+    if (!texto) {
+      return { sucesso: false, message: 'Não consegui responder agora. Tente novamente em instantes.' };
+    }
+    return { sucesso: true, resposta: texto.trim() };
+  } catch (err) {
+    return { sucesso: false, message: 'Erro ao consultar o assistente: ' + err.message };
+  }
 }
