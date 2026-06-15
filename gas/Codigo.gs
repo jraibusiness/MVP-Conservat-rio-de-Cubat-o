@@ -894,6 +894,9 @@ function responderChatbot(pergunta, historico) {
       }
     );
     const json = JSON.parse(resp.getContentText());
+    if (json && json.error) {
+      return { sucesso: false, message: 'Erro da API (' + resp.getResponseCode() + '): ' + json.error.message };
+    }
     const texto = json && json.candidates && json.candidates[0]
       && json.candidates[0].content && json.candidates[0].content.parts
       && json.candidates[0].content.parts[0] && json.candidates[0].content.parts[0].text;
