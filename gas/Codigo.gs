@@ -147,7 +147,7 @@ function doGet(e) {
         .addMetaTag('viewport', 'width=device-width, initial-scale=1');
     }
     return HtmlService.createTemplateFromFile('Index').evaluate()
-      .setTitle('Inscrição - Conservatório de Cubatão')
+      .setTitle('Inscrição - Processo Seletivo')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
 
