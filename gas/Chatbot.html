@@ -1,0 +1,138 @@
+<style>
+  #chat-bolha{
+    position:fixed;bottom:22px;right:22px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);
+    color:#fff;border:none;cursor:pointer;font-size:24px;
+    box-shadow:0 6px 18px rgba(29,142,206,.35);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s var(--easing), box-shadow .15s var(--easing);
+    z-index:9998;
+  }
+  #chat-bolha:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 10px 24px rgba(29,142,206,.45);}
+  #chat-bolha .dot-novo{
+    position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;
+    background:var(--amarelo);border:2px solid #fff;
+  }
+
+  #chat-painel{
+    position:fixed;bottom:90px;right:22px;width:min(340px, calc(100vw - 32px));
+    max-height:min(480px, calc(100vh - 140px));
+    background:var(--surface);border-radius:var(--radius);box-shadow:var(--sombra-hover);
+    border:1px solid rgba(15,23,42,.06);
+    display:flex;flex-direction:column;overflow:hidden;
+    opacity:0;transform:translateY(12px) scale(.98);pointer-events:none;
+    transition:opacity .18s var(--easing), transform .18s var(--easing);
+    z-index:9999;
+  }
+  #chat-painel.open{opacity:1;transform:none;pointer-events:auto;}
+
+  #chat-cabecalho{
+    background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);color:#fff;
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;
+  }
+  #chat-cabecalho strong{font-size:14px;}
+  #chat-cabecalho span{font-size:11.5px;color:rgba(255,255,255,.8);display:block;margin-top:2px;}
+  #chat-fechar{background:rgba(255,255,255,.18);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;}
+
+  #chat-mensagens{flex:1 1 auto;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#f7fafc;}
+  .chat-msg{max-width:85%;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.5;opacity:0;transform:translateY(6px);animation:chatIn .18s var(--easing) forwards;}
+  @keyframes chatIn{to{opacity:1;transform:none;}}
+  .chat-msg.bot{align-self:flex-start;background:#fff;border:1px solid rgba(15,23,42,.06);color:var(--carvao);border-bottom-left-radius:4px;}
+  .chat-msg.usuario{align-self:flex-end;background:var(--azul);color:#fff;border-bottom-right-radius:4px;}
+  .chat-msg.erro{align-self:flex-start;background:#FDECEB;color:var(--vermelho);border-bottom-left-radius:4px;}
+
+  #chat-form{display:flex;gap:8px;padding:10px;border-top:1px solid rgba(15,23,42,.06);background:var(--surface);flex:0 0 auto;}
+  #chat-input{flex:1;border:1px solid #d9e1ea;border-radius:20px;padding:10px 14px;font-size:13px;background:#fbfcfe;color:var(--carvao);}
+  #chat-input:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(29,142,206,.15);}
+  #chat-enviar{
+    width:38px;height:38px;border-radius:50%;border:none;flex:0 0 auto;cursor:pointer;
+    background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);color:#fff;font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s var(--easing), opacity .15s;
+  }
+  #chat-enviar:hover{transform:scale(1.06);}
+  #chat-enviar:disabled{opacity:.5;cursor:default;transform:none;}
+
+  .chat-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(29,142,206,.25);border-top-color:var(--azul);border-radius:50%;animation:chatSpin .7s linear infinite;}
+  @keyframes chatSpin{to{transform:rotate(360deg);}}
+</style>
+
+<button id="chat-bolha" onclick="toggleChat()" aria-label="Tirar dúvidas">
+  💬<span class="dot-novo"></span>
+</button>
+
+<div id="chat-painel">
+  <div id="chat-cabecalho">
+    <div>
+      <strong>Assistente do Conservatório</strong>
+      <span>Tire dúvidas sobre o processo seletivo</span>
+    </div>
+    <button id="chat-fechar" onclick="toggleChat()" aria-label="Fechar">✕</button>
+  </div>
+  <div id="chat-mensagens"></div>
+  <form id="chat-form" onsubmit="enviarChat(event)">
+    <input id="chat-input" type="text" placeholder="Digite sua pergunta..." autocomplete="off">
+    <button id="chat-enviar" type="submit" aria-label="Enviar">➤</button>
+  </form>
+</div>
+
+<script>
+  var chatHistorico = [];
+  var chatAberto = false;
+  var chatIniciado = false;
+
+  function toggleChat(){
+    chatAberto = !chatAberto;
+    document.getElementById('chat-painel').classList.toggle('open', chatAberto);
+    document.getElementById('chat-bolha').querySelector('.dot-novo').style.display = 'none';
+    if(chatAberto && !chatIniciado){
+      chatIniciado = true;
+      adicionarMensagem('bot', 'Olá! 👋 Posso te ajudar com dúvidas sobre o processo seletivo, cursos, prazos, valores e contatos do Conservatório. O que você quer saber?');
+    }
+    if(chatAberto) document.getElementById('chat-input').focus();
+  }
+
+  function adicionarMensagem(autor, texto){
+    var box = document.getElementById('chat-mensagens');
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + autor;
+    div.textContent = texto;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  function enviarChat(e){
+    e.preventDefault();
+    var input = document.getElementById('chat-input');
+    var pergunta = input.value.trim();
+    if(!pergunta) return;
+    adicionarMensagem('usuario', pergunta);
+    chatHistorico.push({autor:'usuario', texto:pergunta});
+    input.value = '';
+
+    var botaoEnviar = document.getElementById('chat-enviar');
+    botaoEnviar.disabled = true;
+    var msgCarregando = adicionarMensagem('bot', '');
+    msgCarregando.innerHTML = '<span class="chat-spinner"></span>';
+
+    google.script.run
+      .withSuccessHandler(function(resp){
+        botaoEnviar.disabled = false;
+        if(resp.sucesso){
+          msgCarregando.textContent = resp.resposta;
+          chatHistorico.push({autor:'bot', texto:resp.resposta});
+        }else{
+          msgCarregando.className = 'chat-msg erro';
+          msgCarregando.textContent = resp.message;
+        }
+        document.getElementById('chat-mensagens').scrollTop = document.getElementById('chat-mensagens').scrollHeight;
+      })
+      .withFailureHandler(function(err){
+        botaoEnviar.disabled = false;
+        msgCarregando.className = 'chat-msg erro';
+        msgCarregando.textContent = 'Erro: ' + err.message;
+      })
+      .responderChatbot(pergunta, chatHistorico);
+  }
+</script>
