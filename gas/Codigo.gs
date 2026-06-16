@@ -298,7 +298,14 @@ function salvarNaPlanilha(d) {
     d.tipoInscricao === 'ISENÇÃO' ? new Date() : ''
   ];
   aba.appendRow(novaLinha);
-  return { linha: aba.getLastRow(), dados: novaLinha };
+  const linha = aba.getLastRow();
+  if (d.responsavel) {
+    const nota = 'RESPONSÁVEL LEGAL: ' + d.responsavel.nome + ' ' + d.responsavel.sobrenome
+      + ' | RG: ' + d.responsavel.rg + ' | CPF: ' + d.responsavel.cpf
+      + ' | Nasc.: ' + d.responsavel.nascimento;
+    aba.getRange(linha, 1).setNote(nota);
+  }
+  return { linha: linha, dados: novaLinha };
 }
 
 function salvarComprovanteNoDrive(base64Data, nomeArquivo, cpfCandidato) {

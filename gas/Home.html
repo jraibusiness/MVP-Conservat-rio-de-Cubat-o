@@ -129,6 +129,16 @@
 
     .rodape{margin-top:30px;font-size:12px;color:#8a97a3;text-align:center;letter-spacing:.3px;}
     .rodape strong{color:#5b6b7a;}
+
+    /* FAQ */
+    .faq{width:100%;max-width:460px;margin-top:28px;}
+    .faq-titulo{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--cinza);text-align:center;margin:0 0 12px;}
+    .faq-item{background:var(--surface);border:1px solid rgba(15,23,42,.06);border-radius:12px;margin-bottom:8px;box-shadow:var(--sombra);overflow:hidden;}
+    .faq-q{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;font-weight:600;font-size:14px;color:var(--carvao);gap:12px;user-select:none;}
+    .faq-q .faq-ic{flex:0 0 auto;font-size:16px;color:var(--cinza);transition:transform .18s var(--easing);}
+    .faq-item.open .faq-q .faq-ic{transform:rotate(180deg);}
+    .faq-a{max-height:0;overflow:hidden;font-size:13px;color:#5b6b7a;line-height:1.6;transition:max-height .25s var(--easing), padding .25s var(--easing);}
+    .faq-item.open .faq-a{max-height:300px;padding:0 16px 14px;}
   </style>
 </head>
 <body>
@@ -177,6 +187,17 @@
       </div>
       <div class="seta">→</div>
     </a>
+  </div>
+
+  <div class="faq">
+    <p class="faq-titulo">Perguntas Frequentes</p>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">A inscrição tem algum custo?<span class="faq-ic">▾</span></div><div class="faq-a">O ensino é 100% gratuito. Há apenas uma taxa de inscrição de R$ 20,00, revertida para a Associação de Pais e Mestres (APM) para manutenção de instrumentos. Candidatos inscritos no CadÚnico ou outros programas sociais podem solicitar isenção total no ato da inscrição.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Quais cursos e instrumentos são oferecidos?<span class="faq-ic">▾</span></div><div class="faq-a">São oferecidos cursos de <strong>Música</strong> (Violão, Piano, Violino, Canto Lírico, Sopro e outros) e <strong>Dança</strong> (iniciante, avançado e técnico). A lista completa de vagas por instrumento aparece no formulário de inscrição.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Existe limite de idade para se inscrever?<span class="faq-ic">▾</span></div><div class="faq-a">Sim. Cada instrumento pode ter faixa etária específica (ex.: Piano a partir de 7 anos, violão a partir de 12). O Curso Técnico exige mínimo de 14 anos e Ensino Médio cursando ou concluído. O sistema bloqueia automaticamente inscrições fora do perfil.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Quem tem prioridade nas vagas?<span class="faq-ic">▾</span></div><div class="faq-a">1º Alunos matriculados na Rede Municipal de Ensino de Cubatão. 2º Moradores de Cubatão em escolas estaduais ou particulares. 3º Candidatos de outras cidades (vagas remanescentes / lista de reserva).</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Como funcionam os testes de seleção?<span class="faq-ic">▾</span></div><div class="faq-a">Para iniciantes: testes práticos de aptidão (ritmo, percepção musical, coordenação). Para os cursos técnicos: prova escrita de teoria musical e prova prática diante de uma banca avaliadora.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Quando serão as inscrições para 2027?<span class="faq-ic">▾</span></div><div class="faq-a">As inscrições seguem o padrão histórico: abertura entre outubro e novembro de 2026, testes em dezembro de 2026 e início das aulas em 2027. A data exata é publicada no Diário Oficial de Cubatão e no Instagram @conservatoriodecubatao.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Onde fica o Conservatório e qual o horário de atendimento?<span class="faq-ic">▾</span></div><div class="faq-a"><strong>Endereço:</strong> Av. Nações Unidas, 168 – Vila Nova, Cubatão/SP.<br><strong>Atendimento presencial:</strong> dias úteis, das 9h às 11h, das 14h às 17h e das 18h às 20h.<br>Instagram: @conservatoriodecubatao</div></div>
   </div>
 
   <div class="rodape"><strong>Conservatório Municipal de Cubatão</strong> · Cubatão/SP</div>

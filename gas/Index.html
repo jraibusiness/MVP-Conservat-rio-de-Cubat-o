@@ -106,6 +106,15 @@
     .btn-home:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(29,142,206,.32);}
     .btn-fechar{background:#eef1f4;color:#5b6b7a;border:1px solid #e3e8ee;}
     .btn-fechar:hover{background:#e3e8ee;transform:none;}
+
+    /* Tooltips (?) */
+    .tip{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(29,142,206,.12);color:var(--azul);font-size:11px;font-weight:800;cursor:pointer;position:relative;vertical-align:middle;margin-left:6px;user-select:none;flex-shrink:0;}
+    .tip .tip-box{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--carvao);color:#fff;font-size:12px;line-height:1.5;padding:10px 12px;border-radius:10px;width:210px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:200;font-weight:400;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.28);}
+    .tip .tip-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--carvao);}
+    .tip:hover .tip-box,.tip.open .tip-box{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+    .pergunta{font-size:19px;color:var(--carvao);margin:0 0 4px;font-weight:700;display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+    /* Campos do responsável */
+    .resp-campo{margin-top:10px;}
   </style>
 </head>
 <body>
@@ -135,11 +144,11 @@
       <div class="stepper"><div class="stepper-fill" id="barra"></div></div>
       <div id="wizard">
 
-        <div class="qstep active" data-step="nome"><p class="pergunta">Qual é o seu primeiro nome?</p><input type="text" id="nome" placeholder="Ex.: Maria"></div>
-        <div class="qstep" data-step="sobrenome"><p class="pergunta">E o seu sobrenome completo?</p><input type="text" id="sobrenome" placeholder="Ex.: da Silva Santos"></div>
+        <div class="qstep active" data-step="nome"><p class="pergunta">Qual é o seu primeiro nome? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Informe apenas o primeiro nome, como consta em seus documentos.</span></span></p><input type="text" id="nome" placeholder="Ex.: Maria"></div>
+        <div class="qstep" data-step="sobrenome"><p class="pergunta">E o seu sobrenome completo? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Informe todos os seus sobrenomes completos.</span></span></p><input type="text" id="sobrenome" placeholder="Ex.: da Silva Santos"></div>
 
         <div class="qstep" data-step="nasc">
-          <p class="pergunta">Qual a sua data de nascimento?</p>
+          <p class="pergunta">Qual a sua data de nascimento? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Necessário para verificar elegibilidade de faixa etária e turno disponível.</span></span></p>
           <p class="ajuda" id="ajudaNasc">Primeiro escolha a década do seu nascimento.</p>
           <div class="decadas" id="decadas"></div>
           <div class="wheels" id="rolos" style="display:none;">
@@ -148,27 +157,38 @@
           </div>
         </div>
 
-        <div class="qstep" data-step="email"><p class="pergunta">Qual o seu e-mail de contato?</p><p class="ajuda">Usaremos para enviar a confirmação e o link de pagamento.</p><input type="email" id="email" placeholder="seunome@email.com"></div>
-        <div class="qstep" data-step="cpf"><p class="pergunta">Qual o seu CPF?</p><input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric"></div>
-        <div class="qstep" data-step="telefone"><p class="pergunta">Qual o seu WhatsApp / celular?</p><input type="text" id="telefone" placeholder="(13) 99999-9999" maxlength="15" inputmode="numeric"></div>
+        <!-- Responsável legal (exibido apenas para menores de 18 — pulado via JS se adulto) -->
+        <div class="qstep" data-step="responsavel">
+          <p class="pergunta">Dados do responsável legal <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Por ser menor de 18 anos, é obrigatório informar os dados de pelo menos um responsável legal.</span></span></p>
+          <p class="ajuda">Preencha os dados de um dos pais ou responsável legal.</p>
+          <input type="text" id="resp-nome" placeholder="Nome do responsável">
+          <input type="text" id="resp-sobrenome" placeholder="Sobrenome do responsável" class="resp-campo">
+          <input type="text" id="resp-rg" placeholder="RG do responsável" class="resp-campo" inputmode="numeric" maxlength="12">
+          <input type="text" id="resp-cpf" placeholder="CPF do responsável" class="resp-campo" inputmode="numeric" maxlength="14">
+          <input type="text" id="resp-nasc" placeholder="Data de nasc. do responsável (DD/MM/AAAA)" class="resp-campo" inputmode="numeric" maxlength="10">
+        </div>
+
+        <div class="qstep" data-step="email"><p class="pergunta">Qual o seu e-mail de contato? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Você receberá a confirmação da inscrição e o link de pagamento neste e-mail.</span></span></p><p class="ajuda">Usaremos para enviar a confirmação e o link de pagamento.</p><input type="email" id="email" placeholder="seunome@email.com"></div>
+        <div class="qstep" data-step="cpf"><p class="pergunta">Qual o seu CPF? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Será usado para identificar sua inscrição. Use apenas os 11 números.</span></span></p><input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric"></div>
+        <div class="qstep" data-step="telefone"><p class="pergunta">Qual o seu WhatsApp / celular? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Informe com DDD. Preferência para WhatsApp — pode ser necessário para comunicações sobre a inscrição.</span></span></p><input type="text" id="telefone" placeholder="(13) 99999-9999" maxlength="15" inputmode="numeric"></div>
 
         <div class="qstep" data-step="cep">
-          <p class="pergunta">Qual o CEP da sua residência?</p>
+          <p class="pergunta">Qual o CEP da sua residência? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">CEP de 8 dígitos. O endereço será preenchido automaticamente após a digitação.</span></span></p>
           <p class="ajuda">O endereço será preenchido automaticamente.</p>
           <input type="text" id="cep" placeholder="00000-000" maxlength="9" inputmode="numeric">
           <input type="text" id="endereco" readonly placeholder="Aguardando CEP..." style="background:#f4f4f4;margin-top:10px;">
         </div>
 
-        <div class="qstep" data-step="numero"><p class="pergunta">Qual o número da residência?</p><input type="text" id="numero" placeholder="Ex.: 250" inputmode="numeric"></div>
+        <div class="qstep" data-step="numero"><p class="pergunta">Qual o número da residência? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Número da porta ou portão. Informe o complemento (apto, bloco) no campo seguinte.</span></span></p><input type="text" id="numero" placeholder="Ex.: 250" inputmode="numeric"></div>
 
         <div class="qstep" data-step="complemento">
-          <p class="pergunta">Complemento</p>
+          <p class="pergunta">Complemento <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Apartamento, bloco, casa dos fundos etc. Campo opcional — deixe em branco se não houver.</span></span></p>
           <p class="ajuda">Apartamento, bloco, casa dos fundos, etc. Deixe em branco se não houver.</p>
           <input type="text" id="complemento" placeholder="Ex.: Apto 32, Bloco B">
         </div>
 
         <div class="qstep" data-step="escolaridade">
-          <p class="pergunta">Qual a sua escolaridade?</p>
+          <p class="pergunta">Qual a sua escolaridade? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Informe seu nível escolar atual ou o mais recente concluído. O Curso Técnico exige Ensino Médio.</span></span></p>
           <div class="cards">
             <label class="opt"><input type="radio" name="escolaridade" value="Ensino Fundamental"><div class="opt-card">Ensino Fundamental</div></label>
             <label class="opt"><input type="radio" name="escolaridade" value="Ensino Médio"><div class="opt-card">Ensino Médio<small>Necessário p/ Técnico</small></div></label>
@@ -177,7 +197,7 @@
         </div>
 
         <div class="qstep" data-step="curso">
-          <p class="pergunta">Qual modalidade de ensino?</p>
+          <p class="pergunta">Qual modalidade de ensino? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Regular: atividades complementares para iniciantes. Técnico: formação profissionalizante (exige 14+ anos e Ensino Médio).</span></span></p>
           <div class="cards duo">
             <label class="opt"><input type="radio" name="curso" value="Regular"><div class="opt-card">Curso Regular</div></label>
             <label class="opt"><input type="radio" name="curso" value="Técnico"><div class="opt-card">Curso Técnico</div></label>
@@ -185,14 +205,14 @@
         </div>
 
         <div class="qstep" data-step="instrumento">
-          <p class="pergunta">Qual instrumento pretendido?</p>
+          <p class="pergunta">Qual instrumento pretendido? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Escolha apenas um instrumento por inscrição. Itens em vermelho estão com vagas esgotadas (lista de espera).</span></span></p>
           <div class="cards duo" id="grid-instrumentos">
             <div style="grid-column:1/-1;text-align:center;color:#777;"><span class="spinner"></span>Carregando vagas...</div>
           </div>
         </div>
 
         <div class="qstep" data-step="periodo">
-          <p class="pergunta">Qual turno de estudo?</p>
+          <p class="pergunta">Qual turno de estudo? <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Manhã disponível apenas para menores de 18 anos. Noite exclusivo para adultos e alunos do Técnico.</span></span></p>
           <div class="cards">
             <label class="opt"><input type="radio" name="periodo" value="Manhã" id="optManha"><div class="opt-card">Manhã<small>Apenas menores de 18</small></div></label>
             <label class="opt"><input type="radio" name="periodo" value="Tarde"><div class="opt-card">Tarde<small>Público misto</small></div></label>
@@ -201,7 +221,7 @@
         </div>
 
         <div class="qstep" data-step="pagamento">
-          <p class="pergunta">Perfil financeiro</p>
+          <p class="pergunta">Perfil financeiro <span class="tip" onclick="toggleTip(this)">?<span class="tip-box">Taxa de R$ 20,00 revertida para a APM (manutenção de instrumentos). Beneficiários do CadÚnico ou programas sociais podem solicitar isenção total.</span></span></p>
           <div class="cards">
             <label class="opt"><input type="radio" name="tipoInscricao" value="TAXA" checked onchange="toggleIsencao(false)"><div class="opt-card">💳 Pagar Taxa Normal (R$ 20,00)</div></label>
             <label class="opt"><input type="radio" name="tipoInscricao" value="ISENÇÃO" onchange="toggleIsencao(true)"><div class="opt-card">📄 Solicitar Isenção (Programas Sociais)</div></label>
@@ -303,13 +323,27 @@
       if(step==='periodo') aplicarRegraTurno();
       if(step==='revisao') renderRevisao();
     }
-    function voltar(){ if(atual>0) go(atual-1); }
+    function toggleTip(el){
+      el.classList.toggle('open');
+      document.addEventListener('click', function fechar(e){ if(!el.contains(e.target)){ el.classList.remove('open'); document.removeEventListener('click',fechar); } }, {capture:true});
+    }
+
+    function stepVisivel(i){
+      if(steps[i] && steps[i].dataset.step==='responsavel' && idadeCandidato>=18) return false;
+      return true;
+    }
+    function proximo(idx){ let i=idx+1; while(i<steps.length && !stepVisivel(i)) i++; return i; }
+    function anterior(idx){ let i=idx-1; while(i>=0 && !stepVisivel(i)) i--; return i; }
+
+    function voltar(){ if(atual>0){ const ant=anterior(atual); if(ant>=0) go(ant); } }
 
     function avancar(){
       if(!validar(steps[atual].dataset.step)) return;
       if(retornoRevisao && steps[atual].dataset.step!=='revisao'){ retornoRevisao=false; go(stepIndex('revisao')); return; }
       if(atual===steps.length-1){ finalizar(); return; }
-      go(atual+1);
+      const prox=proximo(atual);
+      if(prox>=steps.length){ finalizar(); return; }
+      go(prox);
     }
 
     document.addEventListener('keydown', e=>{
@@ -323,6 +357,13 @@
         case 'nome': if(!val('nome')) return mostrarErro('Informe seu primeiro nome.'),false; break;
         case 'sobrenome': if(!val('sobrenome')) return mostrarErro('Informe seu sobrenome.'),false; break;
         case 'nasc': if(!decadaSel) return mostrarErro('Escolha a década de nascimento.'),false; calcularIdade(); break;
+        case 'responsavel':
+          if(!val('resp-nome')) return mostrarErro('Informe o nome do responsável.'),false;
+          if(!val('resp-sobrenome')) return mostrarErro('Informe o sobrenome do responsável.'),false;
+          if(!val('resp-rg')) return mostrarErro('Informe o RG do responsável.'),false;
+          if(val('resp-cpf').replace(/\D/g,'').length!==11) return mostrarErro('Informe o CPF completo do responsável (11 dígitos).'),false;
+          if(!/^\d{2}\/\d{2}\/\d{4}$/.test(val('resp-nasc'))) return mostrarErro('Informe a data de nascimento do responsável no formato DD/MM/AAAA.'),false;
+          break;
         case 'email': if(!/^\S+@\S+\.\S+$/.test(val('email'))) return mostrarErro('Informe um e-mail válido.'),false; break;
         case 'cpf': if(val('cpf').replace(/\D/g,'').length!==11) return mostrarErro('Digite os 11 números do CPF.'),false; break;
         case 'telefone': if(val('telefone').replace(/\D/g,'').length<10) return mostrarErro('Digite um telefone válido com DDD.'),false; break;
@@ -429,6 +470,7 @@
         ['Turno', r('periodo'), 'periodo'],
         ['Pagamento', tipo==='ISENÇÃO'?'Isenção (PDF anexado)':('Taxa R$ 20,00 · '+r('formaPagamento')), 'pagamento']
       ];
+      if(idadeCandidato<18) itens.splice(2, 0, ['Responsável', (v('resp-nome')+' '+v('resp-sobrenome')).trim()+' · CPF '+v('resp-cpf'), 'responsavel']);
       document.getElementById('revisaoConteudo').innerHTML=itens.map(function(it){
         return '<div class="rev-item"><div style="text-align:left;"><div class="rot">'+it[0]+'</div><div class="val">'+it[1]+'</div></div>'
           +'<button class="editar" onclick="editar(\''+it[2]+'\')">Editar</button></div>';
@@ -448,7 +490,14 @@
         instrumento:document.querySelector('input[name="instrumento"]:checked').value,
         periodo:document.querySelector('input[name="periodo"]:checked').value,
         tipoInscricao:tipo, formaPagamento:document.querySelector('input[name="formaPagamento"]:checked')?.value||'PIX',
-        arquivoBase64:arquivoBase64Global, arquivoNome:arquivoNomeGlobal
+        arquivoBase64:arquivoBase64Global, arquivoNome:arquivoNomeGlobal,
+        responsavel: idadeCandidato<18 ? {
+          nome: document.getElementById('resp-nome').value,
+          sobrenome: document.getElementById('resp-sobrenome').value,
+          rg: document.getElementById('resp-rg').value,
+          cpf: document.getElementById('resp-cpf').value,
+          nascimento: document.getElementById('resp-nasc').value
+        } : null
       };
       google.script.run
         .withSuccessHandler(function(resp){
@@ -515,6 +564,19 @@
         const f=e.target.files[0]; if(!f) return;
         if(f.type!=='application/pdf'){ toast('Apenas arquivos PDF são aceitos.','erro'); e.target.value=''; return; }
         const r=new FileReader(); r.onload=ev=>{ arquivoBase64Global=ev.target.result; arquivoNomeGlobal=f.name; toast('Comprovante anexado.'); }; r.readAsDataURL(f);
+      });
+      document.getElementById('resp-cpf').addEventListener('input',e=>{
+        let v=e.target.value.replace(/\D/g,'').slice(0,11);
+        if(v.length>9) v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2}).*/,'$1.$2.$3-$4');
+        else if(v.length>6) v=v.replace(/^(\d{3})(\d{3})(\d{1,3}).*/,'$1.$2.$3');
+        else if(v.length>3) v=v.replace(/^(\d{3})(\d{1,3}).*/,'$1.$2');
+        e.target.value=v;
+      });
+      document.getElementById('resp-nasc').addEventListener('input',e=>{
+        let v=e.target.value.replace(/\D/g,'').slice(0,8);
+        if(v.length>4) v=v.replace(/^(\d{2})(\d{2})(\d{0,4}).*/,'$1/$2/$3');
+        else if(v.length>2) v=v.replace(/^(\d{2})(\d{0,2}).*/,'$1/$2');
+        e.target.value=v;
       });
       google.script.run.withSuccessHandler(renderizarVagas).obterVagasFormulario();
     };
