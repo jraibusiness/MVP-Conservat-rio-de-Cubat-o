@@ -84,15 +84,16 @@
     .resultado.open .seta-toggle{transform:rotate(180deg);}
 
     .resultado-detalhes{
-      max-height:0;overflow:hidden;font-size:.85rem;color:#5b6b7a;line-height:1.6;
-      transition:max-height .18s var(--easing), margin-top .18s var(--easing), padding-top .18s var(--easing);
+      max-height:0;overflow:hidden;font-size:.85rem;color:#5b6b7a;line-height:1.6;opacity:0;
+      transition:max-height .22s var(--easing), margin-top .22s var(--easing), padding-top .22s var(--easing), opacity .18s var(--easing);
     }
+    .resultado.open .resultado-detalhes{opacity:1;}
     .resultado.open .resultado-detalhes{max-height:200px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(15,23,42,.08);}
 
     .msg-erro{color:var(--vermelho);font-size:.9rem;background:#FDECEB;border-radius:10px;padding:12px 14px;margin-top:14px;}
 
     .menu-voltar{margin-top:24px;font-size:14px;text-align:center;}
-    .menu-voltar a{color:#5b6b7a;text-decoration:none;font-weight:600;transition:color .2s;}
+    .menu-voltar a{color:#5b6b7a;text-decoration:none;font-weight:600;}
     .menu-voltar a:hover{color:var(--azul);}
   </style>
 </head>

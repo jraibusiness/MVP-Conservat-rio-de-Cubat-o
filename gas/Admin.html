@@ -33,7 +33,7 @@
     .subt{text-align:center;color:#778;font-size:13px;margin:-6px 0 22px;}
     input,select{width:100%;padding:12px;margin:10px 0;box-sizing:border-box;border:1px solid #d9e1ea;background:#fbfcfe;border-radius:10px;font-size:15px;color:var(--carvao);transition:border-color .15s var(--easing), box-shadow .15s var(--easing);}
     input:focus,select:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(29,142,206,.15);}
-    button{padding:12px 20px;background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:700;box-shadow:0 6px 16px rgba(29,142,206,.25);transition:transform .15s var(--easing), box-shadow .15s var(--easing), background .2s;}
+    button{padding:12px 20px;background:linear-gradient(135deg,var(--azul) 0%, var(--azul-escuro) 100%);color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:700;box-shadow:0 6px 16px rgba(29,142,206,.25);transition:transform .15s var(--easing), box-shadow .15s var(--easing);}
     button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(29,142,206,.32);}
     button:active{transform:translateY(0) scale(.99);}
     button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
@@ -67,7 +67,7 @@
     .barra-progresso-bg{background:#e9edf2;border-radius:10px;height:12px;width:100%;overflow:hidden;margin-top:5px;}
     .barra-progresso-fill{background:linear-gradient(90deg,var(--verde),var(--verde-escuro));height:100%;width:0%;transition:width .6s var(--easing);}
     .menu-voltar{text-align:center;margin-top:20px;font-size:14px;}
-    .menu-voltar a{color:#5b6b7a;text-decoration:none;font-weight:600;transition:color .2s;}
+    .menu-voltar a{color:#5b6b7a;text-decoration:none;font-weight:600;}
     .menu-voltar a:hover{color:var(--azul);}
     .spinner{display:inline-block;width:15px;height:15px;border:3px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
     @keyframes spin{to{transform:rotate(360deg);}}
@@ -80,7 +80,7 @@
     .menu-card{
       display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:#fff;
       border:1px solid rgba(15,23,42,.06);border-radius:var(--radius);padding:20px;cursor:pointer;color:inherit;
-      box-shadow:var(--sombra);transition:transform .15s var(--easing), box-shadow .15s var(--easing), border-color .15s var(--easing);
+      box-shadow:var(--sombra);transition:transform .15s var(--easing), box-shadow .15s var(--easing);
       position:relative;overflow:hidden;
       opacity:0;transform:translateY(14px);animation:slideUp .28s var(--easing) forwards;
     }

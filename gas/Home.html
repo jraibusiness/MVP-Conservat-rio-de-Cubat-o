@@ -41,7 +41,7 @@
       border:3px solid var(--amarelo);
       animation:popIn .28s var(--easing) .05s both;
     }
-    @keyframes popIn{ from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);} }
+    @keyframes popIn{ from{opacity:0; transform:scale(.97);} to{opacity:1; transform:scale(1);} }
     .topo h1{
       color:var(--azul-escuro);font-size:clamp(20px,4vw,26px);
       text-transform:uppercase;letter-spacing:1.5px;margin:0;font-weight:800;
@@ -60,14 +60,14 @@
       text-decoration:none;background:var(--surface);
       border:1px solid rgba(15,23,42,.06);border-radius:var(--radius);
       padding:20px 22px;box-shadow:var(--sombra);color:inherit;
-      transition:transform .15s var(--easing), box-shadow .15s var(--easing), border-color .15s var(--easing);
+      transition:transform .15s var(--easing), box-shadow .15s var(--easing), border-color .15s;
       overflow:hidden;
       opacity:0; transform:translateY(14px);
       animation:slideUp .28s var(--easing) forwards;
     }
-    .opcao:nth-child(1){animation-delay:.10s;}
-    .opcao:nth-child(2){animation-delay:.18s;}
-    .opcao:nth-child(3){animation-delay:.26s;}
+    .opcao:nth-child(1){animation-delay:.05s;}
+    .opcao:nth-child(2){animation-delay:.10s;}
+    .opcao:nth-child(3){animation-delay:.15s;}
     @keyframes slideUp{ to{opacity:1; transform:translateY(0);} }
 
     .opcao::before{
@@ -90,7 +90,7 @@
     .opcao .texto{flex:1;min-width:0;}
     .opcao h2{margin:0 0 3px;font-size:16.5px;color:var(--carvao);font-weight:700;display:flex;align-items:center;gap:8px;}
     .opcao p{margin:0;font-size:13px;color:#667;line-height:1.45;}
-    .seta{flex:0 0 auto;font-size:18px;color:var(--cinza);transition:transform .15s var(--easing), color .15s var(--easing);}
+    .seta{flex:0 0 auto;font-size:18px;color:var(--cinza);transition:transform .15s var(--easing);}
     .opcao:hover .seta{transform:translateX(4px);color:var(--azul);}
 
     /* Card principal (inscrição aberta) — destaque */
@@ -137,8 +137,8 @@
     .faq-q{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;font-weight:600;font-size:14px;color:var(--carvao);gap:12px;user-select:none;}
     .faq-q .faq-ic{flex:0 0 auto;font-size:16px;color:var(--cinza);transition:transform .18s var(--easing);}
     .faq-item.open .faq-q .faq-ic{transform:rotate(180deg);}
-    .faq-a{max-height:0;overflow:hidden;font-size:13px;color:#5b6b7a;line-height:1.6;transition:max-height .25s var(--easing), padding .25s var(--easing);}
-    .faq-item.open .faq-a{max-height:300px;padding:0 16px 14px;}
+    .faq-a{max-height:0;overflow:hidden;font-size:13px;color:#5b6b7a;line-height:1.6;opacity:0;transition:max-height .25s var(--easing), padding .25s var(--easing), opacity .2s var(--easing);}
+    .faq-item.open .faq-a{max-height:300px;padding:0 16px 14px;opacity:1;}
   </style>
 </head>
 <body>
