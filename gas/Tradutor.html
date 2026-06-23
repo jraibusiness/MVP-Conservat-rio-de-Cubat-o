@@ -1,0 +1,90 @@
+<!-- Tradutor (PT/EN/ES) — menu fixo que usa o widget do Google Translate.
+     A escolha persiste em cookie (googtrans) e vale para TODAS as páginas que
+     incluírem este partial via <?!= include('Tradutor') ?>. A barra padrão do
+     Google fica oculta; o usuário controla o idioma pelos botões PT/EN/ES. -->
+<style>
+  /* Oculta a barra/banner e ornamentos padrão do Google Translate */
+  .goog-te-banner-frame.skiptranslate,
+  .goog-te-gadget-icon,
+  .goog-logo-link,
+  .goog-te-balloon-frame { display:none !important; }
+  body { top:0 !important; }
+  .goog-tooltip, .goog-tooltip:hover { display:none !important; }
+  .goog-text-highlight { background:transparent !important; box-shadow:none !important; }
+  #google_translate_element { position:absolute; width:0; height:0; overflow:hidden; opacity:0; }
+
+  #tradutor{
+    position:fixed; top:14px; left:14px; z-index:9997;
+    display:flex; align-items:center; gap:2px;
+    background:var(--surface,#fff); border:1px solid rgba(15,23,42,.10);
+    border-radius:999px; padding:4px;
+    box-shadow:0 4px 14px rgba(15,23,42,.10);
+    font-family:'Inter',Arial,Helvetica,sans-serif;
+  }
+  #tradutor .tr-ic{ font-size:14px; margin:0 4px 0 6px; }
+  #tradutor button{
+    border:none; background:transparent; cursor:pointer;
+    font-size:12px; font-weight:700; color:#5b6b7a;
+    padding:6px 10px; border-radius:999px; letter-spacing:.3px;
+    transition:background .15s, color .15s;
+  }
+  #tradutor button:hover{ background:rgba(29,142,206,.10); color:var(--azul-escuro,#0F5E91); }
+  #tradutor button.ativo{
+    background:linear-gradient(135deg,var(--azul,#1D8ECE),var(--azul-escuro,#0F5E91));
+    color:#fff;
+  }
+</style>
+
+<div id="google_translate_element"></div>
+<div id="tradutor" role="group" aria-label="Selecionar idioma">
+  <span class="tr-ic">🌐</span>
+  <button type="button" data-lang="pt" onclick="traduzirPara('pt')">PT</button>
+  <button type="button" data-lang="en" onclick="traduzirPara('en')">EN</button>
+  <button type="button" data-lang="es" onclick="traduzirPara('es')">ES</button>
+</div>
+
+<script>
+  // Inicializa o widget (escondido); o idioma é controlado pelo menu customizado.
+  function googleTranslateElementInit(){
+    new google.translate.TranslateElement({
+      pageLanguage: 'pt',
+      includedLanguages: 'en,es',
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+  (function(){
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.head.appendChild(s);
+  })();
+
+  // Cookie host-only (mesma origem do Web App do GAS) — persiste entre as páginas.
+  function setCookieGoogtrans(valor){
+    document.cookie = 'googtrans=' + valor + ';path=/';
+  }
+  function delCookieGoogtrans(){
+    document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+  }
+
+  function traduzirPara(lang){
+    if(lang === 'pt'){ delCookieGoogtrans(); }
+    else { setCookieGoogtrans('/' + lang); }
+
+    // Destaca o botão ativo imediatamente (antes do reload).
+    document.querySelectorAll('#tradutor button').forEach(function(b){
+      b.classList.toggle('ativo', b.getAttribute('data-lang') === lang);
+    });
+
+    // Recarrega para o widget aplicar a tradução a partir do cookie.
+    setTimeout(function(){ window.location.reload(); }, 80);
+  }
+
+  // Marca o botão ativo conforme o cookie atual ao carregar a página.
+  (function(){
+    var m = (document.cookie.match(/googtrans=\/([a-z\-]+)/i) || [])[1] || 'pt';
+    document.querySelectorAll('#tradutor button').forEach(function(b){
+      b.classList.toggle('ativo', b.getAttribute('data-lang') === m);
+    });
+  })();
+</script>

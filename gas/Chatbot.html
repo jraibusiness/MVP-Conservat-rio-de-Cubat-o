@@ -55,6 +55,15 @@
 
   .chat-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(29,142,206,.25);border-top-color:var(--azul);border-radius:50%;animation:chatSpin .7s linear infinite;}
   @keyframes chatSpin{to{transform:rotate(360deg);}}
+
+  /* Sugestões rápidas (chips) */
+  #chat-sugestoes{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 8px;background:var(--surface);flex:0 0 auto;}
+  #chat-sugestoes button{
+    flex:0 0 auto;width:auto;font-size:12px;font-weight:600;
+    background:#eef4fb;color:var(--azul-escuro);border:1px solid #d6e6f5;
+    padding:6px 10px;border-radius:999px;box-shadow:none;
+  }
+  #chat-sugestoes button:hover{background:#dceffc;transform:none;box-shadow:none;}
 </style>
 
 <button id="chat-bolha" onclick="toggleChat()" aria-label="Tirar dúvidas">
@@ -70,6 +79,12 @@
     <button id="chat-fechar" onclick="toggleChat()" aria-label="Fechar">✕</button>
   </div>
   <div id="chat-mensagens"></div>
+  <div id="chat-sugestoes">
+    <button type="button" onclick="enviarSugestao('Quanto custa a inscrição?')">💸 Quanto custa?</button>
+    <button type="button" onclick="enviarSugestao('Quais cursos e instrumentos são oferecidos?')">🎼 Cursos</button>
+    <button type="button" onclick="enviarSugestao('Quando serão as inscrições para 2027?')">📅 Datas 2027</button>
+    <button type="button" onclick="enviarSugestao('Onde fica o Conservatório e qual o horário?')">📍 Endereço</button>
+  </div>
   <form id="chat-form" onsubmit="enviarChat(event)">
     <input id="chat-input" type="text" placeholder="Digite sua pergunta..." autocomplete="off">
     <button id="chat-enviar" type="submit" aria-label="Enviar">➤</button>
@@ -102,14 +117,23 @@
     return div;
   }
 
+  function enviarSugestao(texto){
+    var s = document.getElementById('chat-sugestoes'); if(s) s.style.display = 'none';
+    document.getElementById('chat-input').value = texto;
+    document.getElementById('chat-form').requestSubmit();
+  }
+
   function enviarChat(e){
-    e.preventDefault();
+    if(e && e.preventDefault) e.preventDefault();
     var input = document.getElementById('chat-input');
     var pergunta = input.value.trim();
     if(!pergunta) return;
     adicionarMensagem('usuario', pergunta);
-    chatHistorico.push({autor:'usuario', texto:pergunta});
+    // Histórico enviado NÃO inclui a pergunta atual (ela vem em `pergunta`),
+    // evitando enviá-la duas vezes ao Gemini.
+    var historicoParaEnviar = chatHistorico.slice();
     input.value = '';
+    var s = document.getElementById('chat-sugestoes'); if(s) s.style.display = 'none';
 
     var botaoEnviar = document.getElementById('chat-enviar');
     botaoEnviar.disabled = true;
@@ -121,6 +145,8 @@
         botaoEnviar.disabled = false;
         if(resp.sucesso){
           msgCarregando.textContent = resp.resposta;
+          // Registra a pergunta + resposta no histórico SOMENTE agora.
+          chatHistorico.push({autor:'usuario', texto:pergunta});
           chatHistorico.push({autor:'bot', texto:resp.resposta});
         }else{
           msgCarregando.className = 'chat-msg erro';
@@ -133,6 +159,6 @@
         msgCarregando.className = 'chat-msg erro';
         msgCarregando.textContent = 'Erro: ' + err.message;
       })
-      .responderChatbot(pergunta, chatHistorico);
+      .responderChatbot(pergunta, historicoParaEnviar);
   }
 </script>

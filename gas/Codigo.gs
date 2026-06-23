@@ -932,14 +932,22 @@ COMO FUNCIONA ESTE SISTEMA ONLINE
 /**
  * Responde perguntas do candidato sobre o processo seletivo usando a base de
  * conhecimento curada acima + a API do Gemini.
- * historico: array opcional de {autor:'usuario'|'bot', texto:string} das últimas mensagens.
+ * historico: array opcional de {autor:'usuario'|'bot', texto:string} das últimas mensagens
+ *            (SEM incluir a pergunta atual, que vem em `pergunta`).
+ *
+ * Se a GEMINI_API_KEY não estiver configurada — ou se a API falhar — cai
+ * automaticamente no respondedor local (responderChatbotLocal), baseado em
+ * palavras-chave sobre a base de conhecimento. Assim o chatbot SEMPRE responde,
+ * mesmo sem a chave da API.
  */
 function responderChatbot(pergunta, historico) {
   if (!pergunta || !pergunta.trim()) {
     return { sucesso: false, message: 'Digite sua pergunta.' };
   }
+
+  // Sem chave da API? Usa o respondedor local (sempre disponível).
   if (!GEMINI_API_KEY) {
-    return { sucesso: false, message: 'Chatbot indisponível no momento. Entre em contato com a secretaria.' };
+    return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local' };
   }
 
   const instrucaoSistema = 'Você é o assistente virtual do Conservatório Municipal de Cubatão (ETMD "Ivanildo Rebouças da Silva"). '
@@ -971,16 +979,67 @@ function responderChatbot(pergunta, historico) {
     );
     const json = JSON.parse(resp.getContentText());
     if (json && json.error) {
-      return { sucesso: false, message: 'Erro da API (' + resp.getResponseCode() + '): ' + json.error.message };
+      // Erro da API -> fallback local para o bot não ficar mudo.
+      return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local-fallback' };
     }
     const texto = json && json.candidates && json.candidates[0]
       && json.candidates[0].content && json.candidates[0].content.parts
       && json.candidates[0].content.parts[0] && json.candidates[0].content.parts[0].text;
     if (!texto) {
-      return { sucesso: false, message: 'Não consegui responder agora. Tente novamente em instantes.' };
+      return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local-fallback' };
     }
-    return { sucesso: true, resposta: texto.trim() };
+    return { sucesso: true, resposta: texto.trim(), origem: 'gemini' };
   } catch (err) {
-    return { sucesso: false, message: 'Erro ao consultar o assistente: ' + err.message };
+    // Falha de rede/API -> fallback local.
+    return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local-fallback' };
   }
 }
+
+/**
+ * Respondedor local por palavras-chave (fallback). Garante que o chatbot
+ * responda sobre o processo seletivo mesmo sem a GEMINI_API_KEY configurada.
+ * Mantenha alinhado com BASE_CONHECIMENTO_CHATBOT.
+ */
+function responderChatbotLocal(pergunta) {
+  var p = String(pergunta || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  var tem = function () {
+    for (var i = 0; i < arguments.length; i++) { if (p.indexOf(arguments[i]) >= 0) return true; }
+    return false;
+  };
+
+  if (tem('ola', 'oi', 'bom dia', 'boa tarde', 'boa noite', 'ajuda', 'help', 'menu'))
+    return 'Ola! Posso ajudar com: custo e isencao, cursos e idades, datas do processo seletivo, testes de selecao, prioridade de vagas, endereco/atendimento e como usar este sistema. Pergunte o que quiser!';
+
+  if (tem('custo', 'custa', 'preco', 'valor', 'taxa', 'quanto', 'gratuito', 'gratis', 'pagamento', 'pague', 'pix', 'boleto', 'fatura'))
+    return 'O ensino no Conservatorio e 100% gratuito. Ha apenas uma taxa de inscricao unica de R$ 20,00 (revertida para a APM, para manutencao e afinacao de instrumentos). Apos preencher a ficha e gerada uma cobranca (PIX ou boleto) com prazo curto para pagamento; se vencer sem pagamento, a vaga nao e reservada e e preciso se inscrever de novo.';
+
+  if (tem('isencao', 'isentar', 'cadunico', 'beneficio', 'baixa renda', 'social'))
+    return 'Sim! Candidatos de baixa renda inscritos em programas sociais do Governo Federal (como o CadUnico) podem solicitar isencao TOTAL da taxa de inscricao no proprio formulario, anexando o comprovante em PDF.';
+
+  if (tem('endereco', 'onde fica', 'localizacao', 'como chegar', 'horario', 'atendimento', 'secretaria', 'contato', 'telefone', 'instagram'))
+    return 'O Conservatorio (ETMD "Ivanildo Reboucas da Silva") fica na Av. Nacoes Unidas, 168 - Vila Nova, Cubatao/SP. Atendimento presencial: dias uteis, das 9h as 11h, das 14h as 17h e das 18h as 20h. Instagram: @conservatoriodecubatao.';
+
+  if (tem('idade', 'faixa', 'menor', 'crianca', 'anos', 'piano', 'violao', 'violino', 'sopro', 'cello', 'contrabaixo'))
+    return 'As faixas etarias variam por instrumento: Piano a partir de 7 anos; Violao, Cello e Contrabaixo a partir de 12 anos. O Curso Tecnico exige minimo de 14 anos e Ensino Medio (cursando ou concluido). O proprio sistema bloqueia inscricoes fora do perfil.';
+
+  if (tem('curso', 'cursos', 'modalidade', 'tecnico', 'regular', 'danca', 'musica', 'instrumento', 'instrumentos', 'canto', 'regencia'))
+    return 'Sao oferecidos cursos de Musica (Violao, Piano, Violino, Canto Lirico, Sopro e outros) e Danca (iniciante, avancada/pontes e tecnica). Ha vagas de Atividades Complementares (iniciantes) e do Curso Tecnico Profissionalizante (exige Ensino Medio).';
+
+  if (tem('prioridade', 'preferencia', 'vaga', 'vagas', 'rede municipal', 'cubatao', 'morador', 'outra cidade', 'reserva'))
+    return 'Prioridade de vagas: 1o alunos da Rede Municipal de Ensino de Cubatao; 2o moradores de Cubatao em escolas estaduais ou particulares; 3o candidatos de outras cidades (vagas remanescentes / cadastro de reserva).';
+
+  if (tem('teste', 'testes', 'prova', 'avaliacao', 'selecao', 'banca', 'pratico', 'teoria'))
+    return 'Para iniciantes/criancas: testes praticos de aptidao (ritmo, percepcao musical, coordenacao/flexibilidade). Para os cursos tecnicos: prova escrita de teoria musical + prova pratica diante de banca avaliadora.';
+
+  if (tem('2027', 'quando', 'data', 'datas', 'inscricao', 'prazo', 'prazos', 'calendario', 'edital', 'portaria', 'inicio', 'aulas'))
+    return 'O processo seletivo ocorre anualmente entre outubro e dezembro. Para 2027, a expectativa e abertura das inscricoes entre outubro e novembro de 2026, testes em dezembro/2026 e inicio das aulas em 2027. A data exata so e confirmada pela portaria publicada no Diario Oficial de Cubatao e no Instagram @conservatoriodecubatao.';
+
+  if (tem('consultar', 'consulta', 'status', 'posicao', 'cpf', 'andamento', 'saber', 'acompanhar'))
+    return 'Voce pode consultar a qualquer momento sua situacao e posicao na tela "Consultar Status", informando o CPF usado na inscricao.';
+
+  if (tem('como funciona', 'sistema', 'site', 'online', 'funciona'))
+    return 'A inscricao e feita aqui pelo site (opcao "Realizar Inscricao"), so durante o periodo aberto. Apos preencher a ficha, e gerada uma cobranca (PIX ou boleto) da taxa de R$ 20,00 com prazo curto para pagamento; se vencer sem pagamento, a vaga nao e reservada e e preciso se inscrever de novo.';
+
+  return 'Nao tenho certeza sobre isso. Para informacoes confirmadas, fale com a secretaria da ETMD (Av. Nacoes Unidas, 168 - Vila Nova, Cubatao/SP; atendimento dias uteis 9h-11h, 14h-17h e 18h-20h) ou pelo Instagram @conservatoriodecubatao. Tambem posso ajudar com custo, cursos, idades, datas, testes e prioridade de vagas.';
+}
+
