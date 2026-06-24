@@ -44,7 +44,9 @@ GAS.
 4. **Propriedades do script** (Configurações do projeto → Propriedades do
    script) — defina:
    - `ASAAS_API_KEY` — chave da Asaas
-   - `GEMINI_API_KEY` — **opcional** (veja chatbot abaixo)
+   - `ZAI_API_KEY` — chave da Z.ai (para o chatbot com **GLM-5.2**, mais barato). Opcional, mas recomendado.
+   - `GLM_MODEL` — opcional; padrão `glm-5.2`. Mude se quiser outro modelo da Z.ai.
+   - `GEMINI_API_KEY` — opcional (IA secundária do chatbot, usada só se não houver `ZAI_API_KEY`)
    - `WEBHOOK_TOKEN` — gere rodando `gerarTokenWebhook()` uma vez no editor
 5. Rode uma vez `configurarPlanilha()`, `inicializarConfigSistema()`,
    `inicializarConfigAdmin()` e `obterLimitesVagas()` para criar as abas.
@@ -67,15 +69,16 @@ um seletor customizado; a escolha persiste em cookie (`googtrans`) e vale para
 todas as páginas da mesma origem. A barra padrão do Google fica oculta.
 
 ### c) Chatbot funcionando (`Codigo.gs` + `Chatbot.html`)
-- O bot agora **sempre responde** sobre o processo seletivo: se a
-  `GEMINI_API_KEY` não estiver configurada — ou se a API falhar — ele cai num
-  **respondedor local por palavras-chave** (`responderChatbotLocal`), baseado na
-  mesma base de conhecimento. Com a chave configurada, usa o Gemini.
+- O bot agora **sempre responde** sobre o processo seletivo. Ordem de IA:
+  **GLM-5.2 (Z.ai)** — mais barato, é a primária → Gemini (secundária) →
+  **fallback local** por palavras-chave (`responderChatbotLocal`) se não houver
+  chave ou a API falhar.
 - Corrigido o bug que enviava a última pergunta duas vezes ao modelo.
 - Adicionados **chips de sugestão** (Quanto custa? / Cursos / Datas 2027 /
   Endereço) para o usuário começar rápido.
-- Para ativar a versão com IA: defina `GEMINI_API_KEY` nas Propriedades do
-  script. Sem ela, o bot já funciona (modo local).
+- Para ativar a IA: defina `ZAI_API_KEY` (Z.ai) nas Propriedades do script. Sem
+  ela, o bot já funciona (modo local). Modelo padrão `glm-5.2` (override via
+  `GLM_MODEL`).
 
 ### d) Skills (xstate / shadcn-ui / tailwind / vercel-ai)
 Veja `NOTAS_TECNICAS.md` — este é um projeto Google Apps Script (HtmlService),

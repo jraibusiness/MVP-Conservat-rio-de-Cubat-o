@@ -16,6 +16,9 @@ const NOME_ABA_INSCRICOES = 'Inscricoes';
 const ASAAS_API_KEY = PropertiesService.getScriptProperties().getProperty('ASAAS_API_KEY');
 const ASAAS_API_URL = 'https://api.asaas.com/v3';
 const GEMINI_API_KEY = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+// Chatbot — GLM-5.2 (Z.ai / Zhipu). Mais barato que o Gemini. IA principal.
+const ZAI_API_KEY = PropertiesService.getScriptProperties().getProperty('ZAI_API_KEY');
+const GLM_MODEL = PropertiesService.getScriptProperties().getProperty('GLM_MODEL') || 'glm-5.2';
 
 // =====================================================================
 //  SEGURANÇA DO WEBHOOK (ASAAS) — PASSO 1
@@ -930,45 +933,80 @@ COMO FUNCIONA ESTE SISTEMA ONLINE
 `;
 
 /**
- * Responde perguntas do candidato sobre o processo seletivo usando a base de
- * conhecimento curada acima + a API do Gemini.
- * historico: array opcional de {autor:'usuario'|'bot', texto:string} das últimas mensagens
- *            (SEM incluir a pergunta atual, que vem em `pergunta`).
- *
- * Se a GEMINI_API_KEY não estiver configurada — ou se a API falhar — cai
- * automaticamente no respondedor local (responderChatbotLocal), baseado em
- * palavras-chave sobre a base de conhecimento. Assim o chatbot SEMPRE responde,
- * mesmo sem a chave da API.
+ * Responde perguntas do candidato sobre o processo seletivo.
+ * Ordem de preferência da IA: GLM-5.2 (Z.ai, mais barato) → Gemini → fallback local.
+ * historico: array de {autor:'usuario'|'bot', texto} (SEM a pergunta atual).
+ * O bot SEMPRE responde: se não houver chave de IA ou a API falhar, usa o
+ * respondedor local por palavras-chave (responderChatbotLocal).
  */
 function responderChatbot(pergunta, historico) {
   if (!pergunta || !pergunta.trim()) {
     return { sucesso: false, message: 'Digite sua pergunta.' };
   }
 
-  // Sem chave da API? Usa o respondedor local (sempre disponível).
-  if (!GEMINI_API_KEY) {
-    return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local' };
-  }
+  var respostaIA = null, origem = null;
+  if (ZAI_API_KEY) { respostaIA = chamarGLMChat(pergunta, historico); origem = GLM_MODEL; }
+  if (!respostaIA && GEMINI_API_KEY) { respostaIA = chamarGeminiChat(pergunta, historico); origem = 'gemini'; }
 
-  const instrucaoSistema = 'Você é o assistente virtual do Conservatório Municipal de Cubatão (ETMD "Ivanildo Rebouças da Silva"). '
+  if (respostaIA) return { sucesso: true, resposta: respostaIA, origem: origem };
+  return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local' };
+}
+
+/** Instrução de sistema compartilhada (persona + base de conhecimento). */
+function instrucaoSistemaChatbot() {
+  return 'Você é o assistente virtual do Conservatório Municipal de Cubatão (ETMD "Ivanildo Rebouças da Silva"). '
     + 'Responda em português do Brasil, de forma breve, simpática e objetiva, tirando dúvidas de candidatos e familiares sobre o processo seletivo, cursos, prazos, valores e contatos. '
     + 'Use APENAS as informações fornecidas abaixo. Se a pergunta não puder ser respondida com essas informações, diga que não tem certeza e oriente o candidato a confirmar com a secretaria da ETMD ou nos canais oficiais (site da Prefeitura, Diário Oficial ou Instagram @conservatoriodecubatao). Nunca invente datas, valores ou regras.\n\n'
     + BASE_CONHECIMENTO_CHATBOT;
+}
 
-  const contents = [];
+/** Chama o GLM-5.2 via API da Z.ai (compatível com OpenAI). Retorna o texto ou null. */
+function chamarGLMChat(pergunta, historico) {
+  var messages = [{ role: 'system', content: instrucaoSistemaChatbot() }];
+  (historico || []).slice(-6).forEach(function (m) {
+    messages.push({ role: m.autor === 'bot' ? 'assistant' : 'user', content: m.texto });
+  });
+  messages.push({ role: 'user', content: pergunta });
+
+  var payload = { model: GLM_MODEL, messages: messages, temperature: 0.3, max_tokens: 400 };
+  try {
+    var resp = UrlFetchApp.fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'Authorization': 'Bearer ' + ZAI_API_KEY },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+    var json = JSON.parse(resp.getContentText());
+    if (json && json.error) {
+      Logger.log('GLM erro API: ' + JSON.stringify(json.error));
+      return null;
+    }
+    var texto = json && json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+    if (!texto) Logger.log('GLM sem texto. Resposta: ' + resp.getContentText().slice(0, 300));
+    return texto ? texto.trim() : null;
+  } catch (err) {
+    Logger.log('GLM excecao: ' + err.message);
+    return null;
+  }
+}
+
+/** Chama o Gemini (secundário). Retorna o texto ou null. */
+function chamarGeminiChat(pergunta, historico) {
+  var contents = [];
   (historico || []).slice(-6).forEach(function (m) {
     contents.push({ role: m.autor === 'bot' ? 'model' : 'user', parts: [{ text: m.texto }] });
   });
   contents.push({ role: 'user', parts: [{ text: pergunta }] });
 
-  const payload = {
-    systemInstruction: { parts: [{ text: instrucaoSistema }] },
+  var payload = {
+    systemInstruction: { parts: [{ text: instrucaoSistemaChatbot() }] },
     contents: contents,
     generationConfig: { temperature: 0.3, maxOutputTokens: 400 }
   };
 
   try {
-    const resp = UrlFetchApp.fetch(
+    var resp = UrlFetchApp.fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_API_KEY,
       {
         method: 'post',
@@ -977,21 +1015,14 @@ function responderChatbot(pergunta, historico) {
         muteHttpExceptions: true
       }
     );
-    const json = JSON.parse(resp.getContentText());
-    if (json && json.error) {
-      // Erro da API -> fallback local para o bot não ficar mudo.
-      return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local-fallback' };
-    }
-    const texto = json && json.candidates && json.candidates[0]
+    var json = JSON.parse(resp.getContentText());
+    if (json && json.error) return null;
+    var texto = json && json.candidates && json.candidates[0]
       && json.candidates[0].content && json.candidates[0].content.parts
       && json.candidates[0].content.parts[0] && json.candidates[0].content.parts[0].text;
-    if (!texto) {
-      return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local-fallback' };
-    }
-    return { sucesso: true, resposta: texto.trim(), origem: 'gemini' };
+    return texto ? texto.trim() : null;
   } catch (err) {
-    // Falha de rede/API -> fallback local.
-    return { sucesso: true, resposta: responderChatbotLocal(pergunta), origem: 'local-fallback' };
+    return null;
   }
 }
 
